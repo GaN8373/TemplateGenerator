@@ -1,10 +1,14 @@
 package generator.interfaces.impl.listener
 
+import generator.config.GlobalState
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JTable
 
-class TypeMappingTableMouseListener(private val typeMappingTable: JTable) : MouseListener {
+class TypeMappingTableMouseListener(
+    globalState: GlobalState,
+    private val typeMappingTable: JTable
+) : MouseListener {
     override fun mouseClicked(e: MouseEvent) {
         if (e.clickCount == 2) {
             val selectedRow = typeMappingTable.selectedRow

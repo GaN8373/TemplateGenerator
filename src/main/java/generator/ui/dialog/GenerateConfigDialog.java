@@ -10,21 +10,24 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import freemarker.template.Template;
 import generator.config.ScopeState;
+import generator.data.TypeMapper;
+import generator.data.table.TableData;
 import generator.interfaces.GlobalStateService;
 import generator.interfaces.impl.layout.DoubleColumnLayout;
 import generator.interfaces.impl.layout.SingleColumnLayout;
 import generator.ui.components.ListCheckboxComponent;
+import generator.util.NameUtil;
+import generator.util.TemplateUtil;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,7 +56,7 @@ public class GenerateConfigDialog extends JDialog {
     public GenerateConfigDialog(AnActionEvent event) {
         this.event = event;
         this.project = event.getProject();
-        scopeState = ScopeState.newInstance(project, pathInput, (JTextField)templateGroupSelected.getEditor().getEditorComponent());
+        scopeState = new ScopeState(project, pathInput, (JTextField) templateGroupSelected.getEditor().getEditorComponent(), typeMappingSelected);
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -74,23 +77,37 @@ public class GenerateConfigDialog extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         Function<ActionEvent, Optional<VirtualFile>> fileChooserConsumer = e -> {
-           FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+            FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
             descriptor.setTitle("选择路径");
             // 2. 弹出路径选择器
             VirtualFile virtualFile = FileChooser.chooseFile(descriptor, project, null);
             return Optional.ofNullable(virtualFile);
         };
 
-        chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x-> scopeState.setGenerateFileStorePath(x.getPath())));
-        templateChoose.addActionListener(e-> fileChooserConsumer.apply(e).ifPresent(x-> scopeState.setTemplateGroupPath(x.getPath())));
+        chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
+        templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
 
-        templateGroupSelected.setEditable(true);
+        refreshTemplateGroupSelect();
+
         initDatabaseTreeState();
 
         initTypeMappingSelect();
 
         refreshGenerateTemplatePanel();
         refreshButton.addActionListener(e -> refreshGenerateTemplatePanel());
+
+    }
+
+    private void refreshTemplateGroupSelect() {
+        templateGroupSelected.setEditable(true);
+
+        templateGroupSelected.removeAllItems();
+
+        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
+        var globalState = service.getState();
+        for (var i = globalState.getHistoryUsePath().size() - 1; i >= 0; i--) {
+            templateGroupSelected.addItem(globalState.getHistoryUsePath().get(i));
+        }
     }
 
     private void initTypeMappingSelect() {
@@ -98,16 +115,6 @@ public class GenerateConfigDialog extends JDialog {
         var globalState = service.getState();
 
         globalState.getGroupMapTemplate().forEach((k, v) -> typeMappingSelected.addItem(k));
-        typeMappingSelected.addActionListener(e -> {
-            var selectedItem = templateGroupSelected.getSelectedItem();
-            if (selectedItem instanceof String label) {
-                scopeState.setSelectTypeMapping(label);
-            } else if (selectedItem instanceof JLabel textField) {
-                scopeState.setSelectTypeMapping(textField.getText());
-            } else if (selectedItem instanceof JTextField textField) {
-                scopeState.setSelectTypeMapping(textField.getText());
-            }
-        });
     }
 
     private void refreshGenerateTemplatePanel() {
@@ -120,13 +127,30 @@ public class GenerateConfigDialog extends JDialog {
         var dir = Path.of(templatePath);
 
         try (var templateGroup = Files.list(dir)) {
-            var collect = templateGroup.map(x -> x.getFileName().toString()).collect(Collectors.toList());
+            if (!templatePath.isBlank()) {
+                var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
+                var globalState = service.getState();
+                globalState.getHistoryUsePath().add(templatePath);
+                templateGroupSelected.insertItemAt(templatePath, 0);
+            }
 
-            var tables = new ListCheckboxComponent(new DoubleColumnLayout(),collect);
-            // TODO repeat add
+            var paths = new HashMap<String, Path>();
+
+            var collect = templateGroup.peek(x -> paths.put(x.getFileName().toString(), x)).map(x -> x.getFileName().toString()).collect(Collectors.toList());
+
+            var tables = new ListCheckboxComponent(new DoubleColumnLayout(), collect);
+
+            for (var actionListener : selectAllButton.getActionListeners()) {
+                selectAllButton.removeActionListener(actionListener);
+            }
             selectAllButton.addActionListener(e -> tables.getCheckBoxList().forEach(x -> x.setSelected(true)));
+
+            for (var actionListener : clearSelectAllButton.getActionListeners()) {
+                clearSelectAllButton.removeActionListener(actionListener);
+            }
             clearSelectAllButton.addActionListener(e -> tables.getCheckBoxList().forEach(x -> x.setSelected(false)));
             generateTemplatePanel.setViewportView(tables);
+            scopeState.setTemplateFilePath(paths, tables);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -163,12 +187,47 @@ public class GenerateConfigDialog extends JDialog {
         var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.keySet());
         tableScrollPanel.setViewportView(tables);
 
-//        databaseTree.setModel(new TreeModel(rootNode));
-        scopeState.setAllTables(allTables);
+        scopeState.setAllTableAndComponent(allTables, tables);
 
     }
 
     private void onOK() {
+        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
+        var globalState = service.getState();
+
+        var fileNameMapTemplate = new HashMap<String, String>();
+        try {
+            for (var path : scopeState.getSelectedTemplatePath()) {
+                var strings = Files.readString(path);
+
+                fileNameMapTemplate.put(path.getFileName().toString().split("\\.*")[0], strings);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        var mapperTemplates = globalState.getTemplates(scopeState.getSelectTypeMapping());
+        if (mapperTemplates.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "TypeMapper is not empty","Message！",  JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        scopeState.getSelectedTables().parallelStream().map(x -> new TableData(x, mapperTemplates)).forEach(tableData -> {
+            for (var entry : fileNameMapTemplate.entrySet()) {
+                Template template;
+                try {
+                    template = new Template(entry.getKey(), entry.getValue(), TemplateUtil.cfg);
+                    var root = new HashMap<String, Object>();
+                    root.put("table", tableData.getDbTable());
+                    root.put("columns", tableData.getColumns());
+                    root.put("NameUtil", new NameUtil());
+
+                    template.process(root, new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
         // 在此处添加您的代码
         dispose();
     }

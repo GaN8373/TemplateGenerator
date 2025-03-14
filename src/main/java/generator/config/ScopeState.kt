@@ -1,17 +1,18 @@
 package generator.config
 
-import com.intellij.database.psi.DbDataSource
 import com.intellij.database.psi.DbTable
 import com.intellij.openapi.project.Project
+import generator.ui.components.ListCheckboxComponent
+import java.nio.file.Path
+import javax.swing.JComboBox
 import javax.swing.JTextField
 
-class ScopeState {
-    var selectTypeMapping: String? = null
-    private var templateGroup: JTextField? = null
-    private var pathInput: JTextField? = null
-    var dataSourceList: Collection<DbDataSource>? = null
-    var allTables: Map<String, DbTable>? = null
-    var selectedTables: Set<String>? = null
+class ScopeState(val project: Project?,
+            val pathInput: JTextField?,
+            val templateGroup: JTextField?,
+            val typeMappingSelected: JComboBox<String>) {
+    private var allTables: Map<String, DbTable>? = null
+    private var selectTableComponent: ListCheckboxComponent? = null
 
     var templateGroupPath: String?
         get() = templateGroup!!.text
@@ -26,13 +27,36 @@ class ScopeState {
         pathInput!!.text = path
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance(project: Project?, pathInput: JTextField?, templateGroup: JTextField?): ScopeState {
-            val scopeState = ScopeState()
-            scopeState.templateGroup = templateGroup
-            scopeState.pathInput = pathInput
-            return scopeState
-        }
+    fun getSelectTypeMapping(): String? {
+        return typeMappingSelected.selectedItem?.toString()
+    }
+    fun setAllTableAndComponent(allTables: Map<String, DbTable>, component: ListCheckboxComponent) {
+
+        this.allTables = allTables
+        this.selectTableComponent = component
+    }
+
+    fun getSelectedTables(): Set<DbTable> {
+        val selectedItems = selectTableComponent?.selectedItems;
+
+        return selectedItems?.mapNotNull {
+            allTables?.get(it)
+        }?.toSet() ?: setOf()
+    }
+
+    private var templateFilePath: Map<String, Path>? = null
+    private var selectTemplateComponent: ListCheckboxComponent? = null
+
+    fun setTemplateFilePath(paths: Map<String, Path>, component: ListCheckboxComponent) {
+        templateFilePath = paths
+        selectTemplateComponent = component
+    }
+
+    fun getSelectedTemplatePath(): Set<Path> {
+        val selectedItems = selectTemplateComponent?.selectedItems;
+
+        return selectedItems?.mapNotNull {
+            templateFilePath?.get(it)
+        }?.toSet() ?: setOf()
     }
 }

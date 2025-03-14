@@ -20,6 +20,7 @@ class SingleColumnLayout : ILayoutDelegate {
 
         for (item in items) {
             val checkBox = JBCheckBox(item)
+            checkBox.isSelected = true
             checkBoxList.add(checkBox)
             addComponent.invoke(checkBox, null)
         }

@@ -1,0 +1,127 @@
+[
+  {
+    "Action": "Regex",
+    "Rule": "(.*)\\[\\]",
+    "Type": "IEnumerable<$1>"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "VARCHAR",
+    "Type": "string"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "NVARCHAR",
+    "Type": "string"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "TEXT",
+    "Type": "string"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "CHAR",
+    "Type": "string"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "INT",
+    "Type": "int"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "INTEGER",
+    "Type": "int"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "BIGINT",
+    "Type": "long"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "SMALLINT",
+    "Type": "short"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "TINYINT",
+    "Type": "byte"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "DECIMAL",
+    "Type": "decimal"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "NUMERIC",
+    "Type": "decimal"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "MONEY",
+    "Type": "decimal"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "SMALLMONEY",
+    "Type": "decimal"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "FLOAT",
+    "Type": "double"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "REAL",
+    "Type": "float"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "DATETIME",
+    "Type": "DateTime"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "DATE",
+    "Type": "DateTime"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "TIME",
+    "Type": "TimeSpan"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "BIT",
+    "Type": "bool"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "BOOLEAN",
+    "Type": "bool"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "BINARY",
+    "Type": "byte[]"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "VARBINARY",
+    "Type": "byte[]"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "IMAGE",
+    "Type": "byte[]"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "uuid",
+    "Type": "Guid"
+  }
+]

@@ -16,6 +16,8 @@ class GlobalStateService : PersistentStateComponent<GlobalState?> {
     }
 
     override fun loadState(state: GlobalState) {
+        state.historyUsePath = state.historyUsePath.takeLast(10)
+
         this.globalState = state
     }
 }

@@ -1,10 +1,14 @@
 package generator.data
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import generator.MapperAction
 
 class TypeMapper : Comparable<TypeMapper> {
+    @JsonAlias("action", "Action")
     var action: MapperAction = MapperAction.Eq
+    @JsonAlias("rule", "Rule")
     var rule: String = ""
+    @JsonAlias("type", "Type")
     var type: String = ""
 
 

@@ -15,5 +15,6 @@ public class HelloPluginsAction extends AnAction {
         tableGenerator.pack();
 
         tableGenerator.setVisible(true);
+        tableGenerator.setUndecorated(true);
     }
 }

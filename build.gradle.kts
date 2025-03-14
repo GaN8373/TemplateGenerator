@@ -19,7 +19,14 @@ intellij {
     plugins.set(listOf("com.intellij.database"))
 }
 
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+}
 
+tasks.test {
+    useJUnitPlatform()
+}
 
 tasks {
     // Set the JVM compatibility versions
@@ -43,6 +50,7 @@ tasks {
 }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.freemarker:freemarker:2.3.32")
 }
 kotlin {
     jvmToolchain(17)

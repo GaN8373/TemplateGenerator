@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import generator.ui.dialog.GenerateConfigDialog;
 
-public class HelloPluginsAction extends AnAction {
+public class TemplateGeneratorPluginsAction extends AnAction {
 
 
     @Override

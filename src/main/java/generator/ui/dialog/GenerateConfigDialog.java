@@ -42,7 +42,6 @@ public class GenerateConfigDialog extends DialogWrapper {
     private final Project project;
     private final AnActionEvent event;
     private JPanel contentPane;
-    private JButton buttonOK;
     private JLabel templateGroupLabel;
     private JLabel typeMappingLabel;
     private JLabel pathLabel;
@@ -175,8 +174,8 @@ public class GenerateConfigDialog extends DialogWrapper {
                     var fileName = path.getFileName().toString().split("\\.")[0];
 
                     var endIndex = strings.lastIndexOf(SPLIT_TAG);
-                    var matcher = strings.substring(strings.indexOf("#region config"), endIndex);
-                    var group = matcher.replace("#region config", "");
+                    var matcher = strings.substring(strings.indexOf(SPLIT_TAG_REGEX), endIndex);
+                    var group = matcher.replace(SPLIT_TAG_REGEX, "");
                     if (!StringUtil.isEmpty(group)) {
                         fileNameMapConfig.put(fileName, group);
                     }
@@ -248,7 +247,6 @@ public class GenerateConfigDialog extends DialogWrapper {
         this.project = event.getProject();
         scopeState = new ScopeState(project, pathInput, templateGroupSelected, typeMappingSelected);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
         Function<ActionEvent, Optional<VirtualFile>> fileChooserConsumer = e -> {
             FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();

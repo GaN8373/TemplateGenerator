@@ -4,7 +4,6 @@ import com.intellij.database.psi.DbTable;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -16,12 +15,12 @@ import freemarker.template.Template;
 import generator.config.ScopeState;
 import generator.config.TemplateConfig;
 import generator.data.table.TableData;
-import generator.interfaces.GlobalStateService;
+import generator.interfaces.impl.GlobalStateService;
 import generator.interfaces.impl.layout.DoubleColumnLayout;
 import generator.interfaces.impl.layout.SingleColumnLayout;
 import generator.ui.components.ListCheckboxComponent;
 import generator.util.NameUtil;
-import generator.util.NotificationUtil;
+import generator.util.StaticUtil;
 import generator.util.TemplateUtil;
 
 import javax.swing.*;
@@ -32,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -64,16 +62,18 @@ public class GenerateConfigDialog extends JDialog {
 
         templateGroupSelected.removeAllItems();
 
-        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-        var globalState = service.getState();
-        for (var i = globalState.getHistoryUsePath().size() - 1; i >= 0; i--) {
-            templateGroupSelected.addItem(globalState.getHistoryUsePath().get(i));
+        var globalState = GlobalStateService.getInstance().getState();
+
+        for (String input : globalState.getHistoryUsePath()) {
+            templateGroupSelected.insertItemAt(input, 0);
+        }
+        if (templateGroupSelected.getItemCount() >= 0) {
+            templateGroupSelected.setSelectedIndex(0);
         }
     }
 
     private void initTypeMappingSelect() {
-        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-        var globalState = service.getState();
+        var globalState = GlobalStateService.getInstance().getState();
 
         globalState.getGroupMapTemplate().forEach((k, v) -> typeMappingSelected.addItem(k));
     }
@@ -89,10 +89,11 @@ public class GenerateConfigDialog extends JDialog {
 
         try (var templateGroup = Files.list(dir)) {
             if (!templatePath.isBlank()) {
-                var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-                var globalState = service.getState();
+                var globalState = GlobalStateService.getInstance().getState();
+                if (!globalState.getHistoryUsePath().contains(templatePath)) {
+                    templateGroupSelected.insertItemAt(templatePath, 0);
+                }
                 globalState.getHistoryUsePath().add(templatePath);
-                templateGroupSelected.insertItemAt(templatePath, 0);
             }
 
             var paths = new HashMap<String, Path>();
@@ -153,8 +154,7 @@ public class GenerateConfigDialog extends JDialog {
     }
 
     private void onOK() {
-        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-        var globalState = service.getState();
+       var globalState = GlobalStateService.getInstance().getState();
 
         var fileNameMapTemplate = new HashMap<String, String>();
         var fileNameMapConfig = new HashMap<String, String>();
@@ -217,13 +217,13 @@ public class GenerateConfigDialog extends JDialog {
                         file.getParentFile().mkdirs();
 
                         if (!file.createNewFile()) {
-                            NotificationUtil.showWarningNotification("Create File", "Can not create file", project, NotificationType.WARNING);
+                            StaticUtil.showWarningNotification("Create File", "Can not create file", project, NotificationType.WARNING);
                             return;
                         }
                     }
 
                     template.process(root, new OutputStreamWriter(new FileOutputStream(outPath.toString()), StandardCharsets.UTF_8));
-                    NotificationUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
+                    StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
 
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -239,8 +239,6 @@ public class GenerateConfigDialog extends JDialog {
         // 必要时在此处添加您的代码
         dispose();
     }
-
-    private static Pattern REGION_PATTERN = Pattern.compile("#region config\n(.*?)\n#endregion");
 
     public GenerateConfigDialog(AnActionEvent event) {
         this.event = event;
@@ -267,6 +265,7 @@ public class GenerateConfigDialog extends JDialog {
 
         Function<ActionEvent, Optional<VirtualFile>> fileChooserConsumer = e -> {
             FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+            descriptor.setForcedToUseIdeaFileChooser(true);
             descriptor.setTitle("选择路径");
             // 2. 弹出路径选择器
             VirtualFile virtualFile = FileChooser.chooseFile(descriptor, project, null);

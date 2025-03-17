@@ -26,10 +26,13 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable instance="generator.ui.view.TypeMapperSettingView" displayName="TemplateGeneratorSettings"/>
-            <notificationGroup id="TemplateGeneratorNotification"
-                               displayType="BALLOON"
-                           />
+        <applicationConfigurable instance="generator.ui.view.TypeMapperSettingView"
+                                 displayName="TemplateGeneratorSettings"/>
+        <notificationGroup id="TemplateGeneratorNotification"
+                           displayType="BALLOON"
+        />
+
+        <applicationService serviceImplementation="generator.interfaces.impl.GlobalStateService"/>
     </extensions>
 
     <actions>

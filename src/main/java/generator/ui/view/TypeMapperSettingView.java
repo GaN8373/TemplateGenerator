@@ -1,29 +1,34 @@
 package generator.ui.view;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.NlsContexts;
 import generator.MapperAction;
 import generator.config.GlobalState;
 import generator.data.TableRowData;
 import generator.data.TypeMapper;
-import generator.interfaces.GlobalStateService;
+import generator.interfaces.impl.GlobalStateService;
 import generator.interfaces.impl.listener.TypeMappingTableMouseListener;
+import generator.util.StaticUtil;
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class TypeMapperSettingView implements Configurable {
     private final GlobalState globalState;
+
     private JPanel panel1;
     private JComboBox<String> typeMappingSelect;
     private JScrollPane mappingScrollPanel;
@@ -34,6 +39,8 @@ public class TypeMapperSettingView implements Configurable {
     private JTable typeMappingTable;
     private JButton newRowButton;
     private JButton delRowButton;
+    private JButton importButton;
+    private JButton exportButton;
 
     @Override
     public @Nullable JComponent createComponent() {
@@ -46,9 +53,8 @@ public class TypeMapperSettingView implements Configurable {
     }
 
     @Override
-    public void apply() throws ConfigurationException {
-        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-        service.loadState(globalState);
+    public void apply() {
+        GlobalStateService.getInstance().loadState(globalState);
     }
 
     @Override
@@ -57,14 +63,13 @@ public class TypeMapperSettingView implements Configurable {
     }
 
     public TypeMapperSettingView() {
-        var service = ApplicationManager.getApplication().getService(GlobalStateService.class);
-
-        this.globalState = service.getState();
+        this.globalState = GlobalStateService.getInstance().getState();
 
         initButton();
 
         initTypeMappingSelect();
-        refreshTypeMappingTable(typeMappingSelect);
+        refreshTypeMappingTable();
+
     }
 
     private void initButton() {
@@ -112,14 +117,82 @@ public class TypeMapperSettingView implements Configurable {
                 typeMappingSelect.removeItemAt(typeMappingSelect.getSelectedIndex());
             }
         });
+
+        importButton.addActionListener(e -> {
+
+                FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createMultipleFilesNoJarsDescriptor();
+                descriptor.setForcedToUseIdeaFileChooser(true);
+                descriptor.withFileFilter(virtualFile -> {
+                    if (virtualFile.isDirectory()) {
+                        return true;
+                    }
+                    return "json".equalsIgnoreCase(virtualFile.getExtension());
+                });
+
+                var virtualFile = FileChooser.chooseFiles(descriptor, ProjectManager.getInstance().getDefaultProject(), null);
+
+                String lastTemplate = null;
+                for (var file : virtualFile) {
+                    try {
+                        var typeMappers = StaticUtil.getJSON().readValue(file.getInputStream(), new TypeReference<HashSet<TypeMapper>>() {
+                        });
+
+                        var groupMapTemplate = globalState.getGroupMapTemplate();
+                        if (!groupMapTemplate.containsKey(file.getName())) {
+                            typeMappingSelect.insertItemAt(file.getName(), 0);
+                        }
+                        groupMapTemplate.put(file.getName(), typeMappers);
+                        lastTemplate = file.getName();
+                    } catch (IOException ex) {
+                        StaticUtil.showWarningNotification("Json", file.getName() + "Json Deserialize Failed", ProjectManager.getInstance().getDefaultProject(), NotificationType.WARNING);
+                    }
+                }
+
+                if (lastTemplate != null) {
+                    typeMappingSelect.setSelectedIndex(0);
+                }
+
+        });
+
+        exportButton.addActionListener(e -> {
+            FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+            descriptor.setForcedToUseIdeaFileChooser(true);
+
+            var virtualFile = FileChooser.chooseFile(descriptor, ProjectManager.getInstance().getDefaultProject(), null);
+            if (virtualFile == null) {
+                return;
+            }
+
+            var selectedItem = typeMappingSelect.getSelectedItem();
+            if (!(selectedItem instanceof String item)) {
+                return;
+            }
+
+            var path = virtualFile.getPath();
+            var typeMappers = globalState.getGroupMapTemplate().get(item);
+            if (typeMappers == null) {
+                return;
+            }
+
+            try {
+                var file = Path.of(path, item + ".json").toFile();
+                if (file.exists()) {
+                    file = Path.of(path, "%s_%d.json".formatted(item, System.currentTimeMillis())).toFile();
+                }
+                var w = new FileWriterWithEncoding(file, StandardCharsets.UTF_8);
+                StaticUtil.getJSON().writeValue(w, typeMappers);
+            } catch (IOException ex) {
+                StaticUtil.showWarningNotification("Json", virtualFile.getName() + "Json Serialize Failed", ProjectManager.getInstance().getDefaultProject(), NotificationType.WARNING);
+            }
+        });
     }
 
     private void initTypeMappingSelect() {
         globalState.getGroupMapTemplate().keySet().forEach(item -> typeMappingSelect.addItem(item));
-        typeMappingSelect.addItemListener(e -> refreshTypeMappingTable(typeMappingSelect));
+        typeMappingSelect.addItemListener(e -> refreshTypeMappingTable());
     }
 
-    private void refreshTypeMappingTable(JComboBox<String> typeMappingSelect) {
+    private void refreshTypeMappingTable() {
         TableRowData tableRowData;
 
         if (typeMappingSelect.getSelectedItem() instanceof String typeKey) {
@@ -148,7 +221,7 @@ public class TypeMapperSettingView implements Configurable {
             if (typeMappingSelect.getSelectedItem() instanceof String str) {
                 var typeMappers = globalState.getGroupMapTemplate().computeIfAbsent(str, k -> new HashSet<>());
                 typeMappers.add(new TypeMapper(MapperAction.Eq, "", ""));
-                refreshTypeMappingTable(this.typeMappingSelect);
+                refreshTypeMappingTable();
             }
         });
 
@@ -161,7 +234,7 @@ public class TypeMapperSettingView implements Configurable {
                 var selectedRow = typeMappingTable.getSelectedRow();
                 if (selectedRow >= 0) {
                     typeMappers.remove(tableRowData.data.get(selectedRow));
-                    refreshTypeMappingTable(this.typeMappingSelect);
+                    refreshTypeMappingTable();
                 }
             }
         });

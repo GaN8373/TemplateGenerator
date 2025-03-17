@@ -1,12 +1,13 @@
 package generator.util
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 
-object NotificationUtil {
+object StaticUtil {
     private const val NOTIFICATION_GROUP_ID = "TemplateGeneratorNotification"
 
 
@@ -16,5 +17,10 @@ object NotificationUtil {
         val notification = notificationGroup.createNotification(title, content, notificationType)
         Notifications.Bus.notify(notification, project)
     }
+
+
+    @JvmStatic
+    val JSON = ObjectMapper();
+
 
 }

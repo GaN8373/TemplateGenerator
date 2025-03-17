@@ -36,7 +36,7 @@
     </extensions>
 
     <actions>
-        <action id="TemplateGenerator" class="generator.TemplateGeneratorPluginsAction" text="HelloPluginsAction">
+        <action id="GaN8373_TemplateGenerator" class="generator.TemplateGeneratorPluginsAction" text="TemplateGenerator">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
     </actions>

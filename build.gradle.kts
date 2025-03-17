@@ -1,27 +1,26 @@
-plugins {
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
 
-    id("org.jetbrains.intellij") version "1.17.4"
+plugins {
+    id("org.jetbrains.intellij.platform") version "2.3.0"
     kotlin("jvm")
 }
 
 group = "generator"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set("2023.2")
-    type = "RD"
-    plugins.set(listOf("com.intellij.database"))
-}
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+    intellijPlatform {
+        rider("2024.3.6")
+        bundledPlugins("com.intellij.database")
+    }
 }
 
 tasks.test {
@@ -35,7 +34,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("232")
-        untilBuild.set("242.*")
+        untilBuild.set("243.*")
     }
 
     signPlugin {

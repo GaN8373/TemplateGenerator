@@ -8,6 +8,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -22,6 +23,7 @@ import generator.ui.components.ListCheckboxComponent;
 import generator.util.NameUtil;
 import generator.util.StaticUtil;
 import generator.util.TemplateUtil;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -34,7 +36,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class GenerateConfigDialog extends JDialog {
+public class GenerateConfigDialog extends DialogWrapper {
     private static final String SPLIT_TAG_REGEX = "#region config";
     private static final String SPLIT_TAG = "#endregion";
     private final ScopeState scopeState;
@@ -42,7 +44,6 @@ public class GenerateConfigDialog extends JDialog {
     private final AnActionEvent event;
     private JPanel contentPane;
     private JButton buttonOK;
-    private JButton buttonCancel;
     private JLabel templateGroupLabel;
     private JLabel typeMappingLabel;
     private JLabel pathLabel;
@@ -57,6 +58,11 @@ public class GenerateConfigDialog extends JDialog {
     private JButton selectAllButton;
     private JButton clearSelectAllButton;
 
+    @Override
+    protected @Nullable JComponent createCenterPanel() {
+        return contentPane;
+    }
+
     private void refreshTemplateGroupSelect() {
         templateGroupSelected.setEditable(true);
 
@@ -67,7 +73,7 @@ public class GenerateConfigDialog extends JDialog {
         for (String input : globalState.getHistoryUsePath()) {
             templateGroupSelected.insertItemAt(input, 0);
         }
-        if (templateGroupSelected.getItemCount() >= 0) {
+        if (templateGroupSelected.getItemCount() > 0) {
             templateGroupSelected.setSelectedIndex(0);
         }
     }
@@ -153,8 +159,9 @@ public class GenerateConfigDialog extends JDialog {
 
     }
 
-    private void onOK() {
-       var globalState = GlobalStateService.getInstance().getState();
+    @Override
+    protected void doOKAction() {
+        var globalState = GlobalStateService.getInstance().getState();
 
         var fileNameMapTemplate = new HashMap<String, String>();
         var fileNameMapConfig = new HashMap<String, String>();
@@ -231,37 +238,16 @@ public class GenerateConfigDialog extends JDialog {
             }
         });
 
-        // 在此处添加您的代码
-        dispose();
-    }
-
-    private void onCancel() {
-        // 必要时在此处添加您的代码
-        dispose();
+        super.doOKAction();
     }
 
     public GenerateConfigDialog(AnActionEvent event) {
+        super(event.getProject());
         this.event = event;
         this.project = event.getProject();
         scopeState = new ScopeState(project, pathInput, (JTextField) templateGroupSelected.getEditor().getEditorComponent(), typeMappingSelected);
-        setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
-
-        buttonOK.addActionListener(e -> onOK());
-
-        buttonCancel.addActionListener(e -> onCancel());
-
-        // 点击 X 时调用 onCancel()
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        // 遇到 ESCAPE 时调用 onCancel()
-        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         Function<ActionEvent, Optional<VirtualFile>> fileChooserConsumer = e -> {
             FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
@@ -284,5 +270,6 @@ public class GenerateConfigDialog extends JDialog {
         refreshGenerateTemplatePanel();
         refreshButton.addActionListener(e -> refreshGenerateTemplatePanel());
 
+        init();
     }
 }

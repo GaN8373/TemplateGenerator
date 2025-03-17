@@ -27,6 +27,9 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable instance="generator.ui.view.TypeMapperSettingView" displayName="TemplateGeneratorSettings"/>
+            <notificationGroup id="TemplateGeneratorNotification"
+                               displayType="BALLOON"
+                           />
     </extensions>
 
     <actions>

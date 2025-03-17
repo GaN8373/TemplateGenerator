@@ -1,3 +1,9 @@
+#region config
+fileName=${NameUtil.toPascalCase(table.getName())}.cs
+dir=Entity
+#endregion
+
+
 /**
 * ${table.getComment()}
 *

@@ -33,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GenerateConfigDialog extends DialogWrapper {
@@ -111,14 +110,16 @@ public class GenerateConfigDialog extends DialogWrapper {
             for (var actionListener : selectAllButton.getActionListeners()) {
                 selectAllButton.removeActionListener(actionListener);
             }
-            selectAllButton.addActionListener(e -> tables.getCheckBoxList().forEach(x -> x.setSelected(true)));
+            selectAllButton.addActionListener(e -> Objects.requireNonNull(tables.getCheckBoxList()).forEach(x -> x.setSelected(true)));
 
             for (var actionListener : clearSelectAllButton.getActionListeners()) {
                 clearSelectAllButton.removeActionListener(actionListener);
             }
-            clearSelectAllButton.addActionListener(e -> tables.getCheckBoxList().forEach(x -> x.setSelected(false)));
+            clearSelectAllButton.addActionListener(e -> Objects.requireNonNull(tables.getCheckBoxList()).forEach(x -> x.setSelected(false)));
             generateTemplatePanel.setViewportView(tables);
             scopeState.setTemplateFilePath(paths, tables);
+
+            Objects.requireNonNull(scopeState.getTemplateGroup()).setSelectedItem(templatePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -245,7 +246,7 @@ public class GenerateConfigDialog extends DialogWrapper {
         super(event.getProject());
         this.event = event;
         this.project = event.getProject();
-        scopeState = new ScopeState(project, pathInput, (JTextField) templateGroupSelected.getEditor().getEditorComponent(), typeMappingSelected);
+        scopeState = new ScopeState(project, pathInput, templateGroupSelected, typeMappingSelected);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -267,7 +268,6 @@ public class GenerateConfigDialog extends DialogWrapper {
 
         initTypeMappingSelect();
 
-        refreshGenerateTemplatePanel();
         refreshButton.addActionListener(e -> refreshGenerateTemplatePanel());
 
         init();

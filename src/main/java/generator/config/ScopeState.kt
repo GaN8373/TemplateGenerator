@@ -7,17 +7,22 @@ import java.nio.file.Path
 import javax.swing.JComboBox
 import javax.swing.JTextField
 
-class ScopeState(val project: Project?,
-            val pathInput: JTextField?,
-            val templateGroup: JTextField?,
-            val typeMappingSelected: JComboBox<String>) {
+class ScopeState(
+    val project: Project?,
+    val pathInput: JTextField?,
+    val templateGroup: JComboBox<String>?,
+    val typeMappingSelected: JComboBox<String>) {
     private var allTables: Map<String, DbTable>? = null
     private var selectTableComponent: ListCheckboxComponent? = null
 
+    fun getTemplateGroupTextField(): JTextField {
+        return templateGroup!!.editor.editorComponent as JTextField
+
+    }
     var templateGroupPath: String?
-        get() = templateGroup!!.text
+        get() = getTemplateGroupTextField().text
         set(template) {
-            templateGroup!!.text = template
+            getTemplateGroupTextField().text = template
         }
 
     val path: String

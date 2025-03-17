@@ -1,31 +1,21 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>generator.TemplateGenerator</id>
+     <id>generator.TemplateGenerator</id>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>TemplateGenerator</name>
 
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="gan.n@outlook.com" url="https://github.com/GaN8373/TemplateGenerator">GaN8373</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
         By using custom templates, you can read database information from the jetbrains.database plugin to generate code in any language. This makes it convenient to generate CRUD (Create, Read, Update, Delete) operations. Please refer to the github wiki for how to write it.
 
         通过自定义模板, 读取jetbrains.database插件的数据库信息生成任意语言的代码. 方便生成增删改查. 如何编写请参阅github wiki.
     </description>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.database</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable instance="generator.ui.view.TypeMapperSettingView"
                                  displayName="TemplateGeneratorSettings"/>

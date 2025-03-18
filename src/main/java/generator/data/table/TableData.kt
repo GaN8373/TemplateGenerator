@@ -11,14 +11,17 @@ class TableData(val dbTable: DbTable, val typeMapper: Collection<TypeMapper>) {
         return dbTable.name
     }
 
+    fun getComment(): String {
+        return dbTable.comment
+    }
 
     fun getColumns(): Collection<ColumnData> {
         val columns = ArrayList<ColumnData>()
         dbTable.getDasChildren(ObjectKind.COLUMN).forEach {
-                if (it is DasColumn) {
-                    columns.add(ColumnData(it,typeMapper))
-                }
+            if (it is DasColumn) {
+                columns.add(ColumnData(it, typeMapper))
             }
+        }
 
         return columns
     }

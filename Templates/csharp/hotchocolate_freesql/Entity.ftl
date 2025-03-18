@@ -13,7 +13,7 @@ using FreeSql.DataAnnotations;
 [Table(Name = "${table.getTableName()}")]
 public partial class ${NameUtil.toPascalCase(table.getTableName())} {
 
-<#list columns as column >
+<#list columns as column > 
     /// <summary>
     /// ${column.getColumnComment()}
     /// </summary>

@@ -12,7 +12,7 @@ public static class Query${NameUtil.toPascalCase(table.getTableName())}
     [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public static IQueryable<${NameUtil.toPascalCase(table.getTableName())}> QueryDemand(IResolverContext context, [Service] IFreeSql db)
+    public static IQueryable<${NameUtil.toPascalCase(table.getTableName())}> Query${NameUtil.toPascalCase(table.getTableName())}(IResolverContext context, [Service] IFreeSql db)
     {
         return db.Select<${NameUtil.toPascalCase(table.getTableName())}>().AsQueryable();
     }

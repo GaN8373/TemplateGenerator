@@ -1,14 +1,14 @@
 package generator
 
-import generator.interfaces.ITypeMapperConvertor
+import generator.interfaces.ITypeMapperMatch
 
 /**
  * The order of the enum entries matters.
  */
-enum class MapperAction(val convertor: ITypeMapperConvertor) {
-    Regex(ITypeMapperConvertor { rule, input -> input.matches(rule.toRegex()) }),
-    Eq(ITypeMapperConvertor { rule, input -> input == rule }),
-    StartsWith(ITypeMapperConvertor { rule, input -> input.startsWith(rule) }),
-    EndsWith(ITypeMapperConvertor { rule, input -> input.endsWith(rule) }),
-    Contains(ITypeMapperConvertor { rule, input -> input.contains(rule) }),
+enum class MapperAction(val match: ITypeMapperMatch) {
+    Regex(ITypeMapperMatch { rule, input -> input.matches(rule.toRegex()) }),
+    Eq(ITypeMapperMatch { rule, input -> input == rule }),
+    StartsWith(ITypeMapperMatch { rule, input -> input.startsWith(rule) }),
+    EndsWith(ITypeMapperMatch { rule, input -> input.endsWith(rule) }),
+    Contains(ITypeMapperMatch { rule, input -> input.contains(rule) }),
 }

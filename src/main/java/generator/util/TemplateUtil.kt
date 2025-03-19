@@ -1,7 +1,9 @@
 package generator.util
 
+import com.intellij.database.model.DasColumn
 import com.intellij.openapi.util.text.StringUtil
 import freemarker.template.Configuration
+import generator.MapperAction
 import generator.config.TemplateConfig
 import generator.config.TemplateConfig.Companion.fromProperties
 import generator.data.TypeMapper
@@ -14,7 +16,7 @@ object TemplateUtil {
     var cfg: Configuration = Configuration(Configuration.VERSION_2_3_32)
 
 
-    fun replaceWithRegexGroups(
+    private fun replaceWithRegexGroups(
         typeMappers: Collection<TypeMapper>,
         regexPattern: String,
         inputText: String,
@@ -29,7 +31,7 @@ object TemplateUtil {
                 var groupValue = matcher.group(i)
                 if (groupValue != null) {
                     for (typeMapper in typeMappers) {
-                        if (typeMapper.action.convertor.match(typeMapper.rule, groupValue!!)) {
+                        if (typeMapper.action.match.match(typeMapper.rule, groupValue!!)) {
                             groupValue = typeMapper.type
                             break
                         }
@@ -61,7 +63,7 @@ object TemplateUtil {
         }
         endIndex += beginIndex + region.length
 
-        val sourceCode = template.substring(endIndex + SPLIT_TAG.length).trim()
+        val sourceCode = template.substring(0, beginIndex) + template.substring(endIndex + SPLIT_TAG.length).trim()
 
         val matcher = template.substring(beginIndex, endIndex)
         val configStr = matcher.replace(region, "").trim()
@@ -70,5 +72,29 @@ object TemplateUtil {
         }
 
         return Pair(fromProperties(configStr), sourceCode)
+    }
+
+
+    @JvmStatic
+    fun convertType(dbColumn: DasColumn, typeMappers: Collection<TypeMapper>): String? {
+        for (typeMapper in typeMappers) {
+            val columnNameLowercase = DasUtil.getDataType(dbColumn).toString().lowercase()
+            if (typeMapper.action == MapperAction.Regex
+                && typeMapper.type.contains("$1")
+                && typeMapper.action.match.match(typeMapper.rule, columnNameLowercase)
+            ) {
+                return replaceWithRegexGroups(
+                    typeMappers,
+                    typeMapper.rule.lowercase(),
+                    columnNameLowercase,
+                    typeMapper.type
+                )
+            }
+
+            if (typeMapper.action.match.match(typeMapper.rule.lowercase(), columnNameLowercase)) {
+                return typeMapper.type
+            }
+        }
+        return null
     }
 }

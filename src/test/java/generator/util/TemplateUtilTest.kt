@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.ValueSources
 
 internal class TemplateUtilTest {
 
@@ -65,6 +66,20 @@ internal class TemplateUtilTest {
         val result = TemplateUtil.extractConfig("#region begin", template)
         assertNotNull(result.second)
         assertEquals("ABCD", result.second)
-
     }
+
+
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "ABCD#region begin fileName=value1\ndir=value2\n#endregion\nABCD\n",
+    ])
+    fun extractTemplate_Successful_Before(template: String) {
+
+        val expectedConfig = TemplateConfig.fromProperties("fileName=value1\ndir=value2")
+        val result = TemplateUtil.extractConfig("#region begin", template)
+        assertNotNull(result.second)
+        assertEquals("ABCDABCD", result.second)
+    }
+
+
 }

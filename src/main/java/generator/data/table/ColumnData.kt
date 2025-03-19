@@ -1,5 +1,6 @@
 package generator.data.table
 
+import com.intellij.codeInsight.daemon.impl.HighlightInfo.convertType
 import com.intellij.database.model.DasColumn
 import generator.MapperAction
 import generator.data.TypeMapper
@@ -12,26 +13,7 @@ class ColumnData(private val dbColumn: DasColumn, private val typeMappers: Colle
     }
 
     fun getMapperType(): String {
-        for (typeMapper in typeMappers) {
-            val columnNameLowercase = DasUtil.getDataType(dbColumn).toString().lowercase()
-            if (typeMapper.action == MapperAction.Regex
-                && typeMapper.type.contains("$1")
-                && typeMapper.action.convertor.match(typeMapper.rule, columnNameLowercase)
-            ) {
-                return TemplateUtil.replaceWithRegexGroups(
-                    typeMappers,
-                    typeMapper.rule.lowercase(),
-                    columnNameLowercase,
-                    typeMapper.type
-                )
-            }
-
-            if (typeMapper.action.convertor.match(typeMapper.rule.lowercase(), columnNameLowercase)) {
-                return typeMapper.type
-            }
-        }
-
-        return "unknown"
+        return TemplateUtil.convertType(dbColumn, typeMappers) ?: "unknown"
     }
 
     fun getRawType(): String {

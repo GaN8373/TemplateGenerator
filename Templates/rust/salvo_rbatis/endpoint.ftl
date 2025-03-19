@@ -1,19 +1,19 @@
 #region config
-fileName=${table.getTableName()}_controller.cs
+fileName=${table.getRawName()}_controller.cs
 dir=controller
 #endregion
 
-<#assign PascalCaseName=NameUtil.toPascalCase(table.getTableName())>
-<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getTableName())>
+<#assign PascalCaseName=NameUtil.toPascalCase(table.getRawName())>
+<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
 
 /// 分页列表
 #[endpoint(
-    tags("${table.getComment()}"),
+    tags("${table.getRawComment()}"),
     parameters(
         ${PascalCaseName}PagePayload
     ),
     responses(
-        (status_code = 200,body=ResObj<Page<${PascalCaseName}List>>,description ="table.getComment()列表")
+        (status_code = 200,body=ResObj<Page<${PascalCaseName}List>>,description ="table.getRawComment()列表")
     ),
 )]
 pub async fn get_${SnakeCaseName}_by_page(req:&mut Request)->Res<Page<${PascalCaseName}List>>{

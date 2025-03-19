@@ -1,10 +1,10 @@
 #region config
-fileName=${table.getTableName()}_model.cs
+fileName=${table.getRawName()}_model.cs
 dir=models
 #endregion
 
-<#assign PascalCaseName=NameUtil.toPascalCase(table.getTableName())>
-<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getTableName())>
+<#assign PascalCaseName=NameUtil.toPascalCase(table.getRawName())>
+<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
 
 
 use serde::{Serialize,Deserialize};
@@ -23,7 +23,7 @@ pub struct ${PascalCaseName}{
     /**
      * ${column.getColumnComment()}
      */
-    pub ${column.getColumnName()}:Option<${column.getMapperType()}>,
+    pub ${column.getRawName()}:Option<${column.getMapperType()}>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,12 +38,12 @@ pub struct ${PascalCaseName}PagePayload{
     /**
      * ${column.getColumnComment()}
      */
-    #[serde(rename(deserialize ="params[${column.getColumnName()}]"))]
-    #[salvo(parameter(rename="params[${column.getColumnName()}]"))]
+    #[serde(rename(deserialize ="params[${column.getRawName()}]"))]
+    #[salvo(parameter(rename="params[${column.getRawName()}]"))]
     #[salvo(parameter(value_type = Option<String>))]
-    pub ${column.getColumnName()}:Option<${column.getMapperType()}>,
+    pub ${column.getRawName()}:Option<${column.getMapperType()}>,
 
 </#list>
 }
 
-rbatis::crud!(${PascalCaseName} {}, "${table.getTableName()}"); 
+rbatis::crud!(${PascalCaseName} {}, "${table.getRawName()}"); 

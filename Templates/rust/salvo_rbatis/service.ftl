@@ -1,5 +1,5 @@
 #region config
-fileName=${table.getTableName()}_controller.cs
+fileName=${table.getRawName()}_controller.cs
 dir=service
 #endregion
 

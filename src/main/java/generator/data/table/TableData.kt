@@ -12,7 +12,7 @@ class TableData(val dbTable: DbTable, val typeMapper: Collection<TypeMapper>) {
     }
 
     fun getComment(): String {
-        return dbTable.comment
+        return dbTable.comment ?: ""
     }
 
     fun getColumns(): Collection<ColumnData> {

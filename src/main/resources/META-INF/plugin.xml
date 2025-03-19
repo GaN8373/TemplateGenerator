@@ -5,11 +5,15 @@
 
     <vendor email="gan.n@outlook.com" url="https://github.com/GaN8373/TemplateGenerator">GaN8373</vendor>
 
-    <description>
+    <description><![CDATA[
+        <p>
         By using custom templates, you can read database information from the jetbrains.database plugin to generate code in any language. This makes it convenient to generate CRUD (Create, Read, Update, Delete) operations. Please refer to the github wiki for how to write it.
+        </p>
 
+        <p>
         通过自定义模板, 读取jetbrains.database插件的数据库信息生成任意语言的代码. 方便生成增删改查. 如何编写请参阅github wiki.
-    </description>
+        </p>
+    ]]></description>
 
 
     <depends>com.intellij.modules.platform</depends>

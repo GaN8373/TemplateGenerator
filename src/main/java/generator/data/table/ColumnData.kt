@@ -7,7 +7,7 @@ import generator.util.DasUtil
 import generator.util.TemplateUtil
 
 class ColumnData(private val dbColumn: DasColumn, private val typeMappers: Collection<TypeMapper>) {
-    fun getRawData(): DasColumn {
+    private fun getRawData(): DasColumn {
         return dbColumn
     }
 

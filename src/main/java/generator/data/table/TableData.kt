@@ -7,11 +7,11 @@ import generator.data.TypeMapper
 
 class TableData(val dbTable: DbTable, val typeMapper: Collection<TypeMapper>) {
 
-    fun getTableName(): String {
+    fun getRawName(): String {
         return dbTable.name
     }
 
-    fun getComment(): String {
+    fun getRawComment(): String {
         return dbTable.comment ?: ""
     }
 

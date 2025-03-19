@@ -34,11 +34,15 @@ class ColumnData(private val dbColumn: DasColumn, private val typeMappers: Colle
         return "unknown"
     }
 
-    fun getColumnName(): String {
+    fun getRawType(): String {
+        return DasUtil.getDataType(dbColumn).toString()
+    }
+
+    fun getRawName(): String {
         return dbColumn.name
     }
 
-    fun getColumnComment(): String {
+    fun getRawComment(): String {
         return dbColumn.comment ?: ""
     }
 

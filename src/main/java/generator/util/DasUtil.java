@@ -3,11 +3,17 @@ package generator.util;
 import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasTable;
 import com.intellij.database.model.DataType;
+import com.intellij.database.model.ObjectKind;
+import com.intellij.database.psi.DbElement;
+import com.intellij.database.psi.DbNamespaceImpl;
+import com.intellij.database.psi.DbTable;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * 兼容工具
@@ -38,5 +44,25 @@ public class DasUtil {
     public static boolean hasAttribute(@Nullable DasColumn column, @NotNull DasColumn.@NotNull Attribute attribute) {
         DasTable table = column == null ? null : column.getTable();
         return table != null && table.getColumnAttrs(column).contains(attribute);
+    }
+
+    /**
+     * collection no self
+     * @param element
+     * @return
+     */
+    public static Set<DbTable> extractTables(PsiElement element) {
+        if (element instanceof DbTable table) {
+            var parent = table.getParent();
+            if (parent != null) {
+                return parent.getDasChildren(ObjectKind.TABLE).filter(DbTable.class).filter(x-> !x.equals(element)).toSet();
+            }
+        }
+
+        if (element instanceof DbNamespaceImpl dbNamespace) {
+            return dbNamespace.getDasChildren(ObjectKind.TABLE).filter(DbTable.class).toSet();
+        }
+
+        return Set.of();
     }
 }

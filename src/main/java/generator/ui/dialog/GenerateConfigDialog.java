@@ -15,12 +15,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import freemarker.template.Template;
 import generator.config.ScopeState;
-import generator.config.TemplateConfig;
 import generator.data.table.TableData;
 import generator.interfaces.impl.GlobalStateService;
 import generator.interfaces.impl.layout.DoubleColumnLayout;
 import generator.interfaces.impl.layout.SingleColumnLayout;
 import generator.ui.components.ListCheckboxComponent;
+import generator.util.DasUtil;
 import generator.util.NameUtil;
 import generator.util.StaticUtil;
 import generator.util.TemplateUtil;
@@ -55,6 +55,7 @@ public class GenerateConfigDialog extends DialogWrapper {
     private JButton refreshButton;
     private JButton selectAllButton;
     private JButton clearSelectAllButton;
+    private JButton tableSelectButton;
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
@@ -101,7 +102,7 @@ public class GenerateConfigDialog extends DialogWrapper {
 
         try (var templateGroup = Files.list(dir)) {
             if (!templatePath.isBlank()) {
-                 if (!globalState.getHistoryUsePath().contains(templatePath)) {
+                if (!globalState.getHistoryUsePath().contains(templatePath)) {
                     templateGroupSelected.insertItemAt(templatePath, 0);
                 }
                 globalState.getHistoryUsePath().add(templatePath);
@@ -137,29 +138,49 @@ public class GenerateConfigDialog extends DialogWrapper {
         if (psiElements == null || psiElements.length == 0) {
             return;
         }
-        List<DbTable> dbTableList = new ArrayList<>();
+        // 获取当前项目所有数据源
+        var allTables = new HashMap<String, DbTable>(16);
+        Set<String> selectDbTable = new LinkedHashSet<>();
         for (PsiElement element : psiElements) {
-            if (!(element instanceof DbTable dbTable)) {
-                continue;
+            if (element instanceof DbTable dbTable) {
+                allTables.put(dbTable.getName(), dbTable);
+                selectDbTable.add(dbTable.getName());
             }
-            dbTableList.add(dbTable);
         }
-        if (dbTableList.isEmpty()) {
+        for (var dbTable : DasUtil.extractTables(psiElements[0])) {
+            allTables.put(dbTable.getName(), dbTable);
+        }
+        if (allTables.isEmpty()) {
             return;
         }
 
-        // 获取当前项目所有数据源
-        var allTables = new HashMap<String, DbTable>(16);
-
         var model = new DefaultListModel<String>();
-        for (var table : dbTableList) {
-            allTables.put(table.getName(), table);
-
-            model.addElement(table.getName());
-
+        for (var table : allTables.keySet()) {
+            model.addElement(table);
         }
 
         var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.keySet());
+        tables.getCheckBoxList().forEach(x -> {
+            if (selectDbTable.contains(x.getText())) {
+                x.setSelected(true);
+            }
+        });
+        if (tables.getCheckBoxList().stream().anyMatch(jbCheckBox -> !jbCheckBox.isSelected())) {
+            tableSelectButton.setText("Select All");
+        } else {
+            tableSelectButton.setText("Clear All");
+        }
+
+        tableSelectButton.addActionListener(e -> {
+            if (tables.getCheckBoxList().stream().anyMatch(jbCheckBox -> !jbCheckBox.isSelected())) {
+                tableSelectButton.setText("Clear All");
+                tables.getCheckBoxList().forEach(x -> x.setSelected(true));
+            } else {
+                tableSelectButton.setText("Select All");
+                tables.getCheckBoxList().forEach(x -> x.setSelected(false));
+            }
+        });
+
         tableScrollPanel.setViewportView(tables);
 
         scopeState.setAllTableAndComponent(allTables, tables);
@@ -254,7 +275,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             VirtualFile virtualFile = FileChooser.chooseFile(descriptor, project, null);
             return Optional.ofNullable(virtualFile);
         };
-
+        pathInput.setText(project.getBasePath());
         chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
 
         templateGroupSelected.addActionListener(e -> refreshGenerateTemplatePanel());

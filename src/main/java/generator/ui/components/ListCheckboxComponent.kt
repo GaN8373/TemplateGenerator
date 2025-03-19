@@ -28,18 +28,15 @@ class ListCheckboxComponent(
         private set
 
 
-    /**
-     * 默认构造方法
-     */
     init {
         // 使用垂直流式布局
-        this.init(layoutDelegate)
+        this.initCheckBox(layoutDelegate)
     }
 
     /**
      * 初始化操作
      */
-    private fun init(layoutDelegate: ILayoutDelegate) {
+    private fun initCheckBox(layoutDelegate: ILayoutDelegate) {
         if (items.isEmpty()) {
             return
         }

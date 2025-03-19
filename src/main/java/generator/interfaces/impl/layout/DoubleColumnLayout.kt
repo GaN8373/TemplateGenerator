@@ -26,7 +26,6 @@ class DoubleColumnLayout : ILayoutDelegate {
         var col = 0
         for (item in items) {
             val checkBox = JBCheckBox(item)
-            checkBox.isSelected = true
             checkBoxList.add(checkBox)
             gbc.gridx = col // 组件的列索引
             gbc.gridy = row // 组件的行索引

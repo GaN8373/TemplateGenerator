@@ -5,11 +5,16 @@ import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbTable
 import generator.data.TypeMapper
 
-class TableData(val dbTable: DbTable, val typeMapper: Collection<TypeMapper>) {
+class TableData(val dbTable: DbTable, private val typeMapper: Collection<TypeMapper>) {
 
     fun getRawName(): String {
         return dbTable.name
     }
+
+    fun getParent(): DbStructData{
+       return DbStructData(dbTable.parent)
+    }
+
 
     fun getRawComment(): String {
         return dbTable.comment ?: ""
@@ -32,7 +37,7 @@ class TableData(val dbTable: DbTable, val typeMapper: Collection<TypeMapper>) {
     }
 
 
-    fun getPrimaryColumn(): List<ColumnData> {
+    fun getPrimaryColumns(): List<ColumnData> {
         return getColumns().filter { it.hasPrimaryKey() }
     }
 }

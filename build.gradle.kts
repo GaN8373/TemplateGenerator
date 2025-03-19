@@ -17,6 +17,8 @@ version = "1.0.1-SNAPSHOT"
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
+
     intellijPlatform {
         rider("2024.3.6")
         bundledPlugins("com.intellij.database")

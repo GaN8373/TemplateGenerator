@@ -21,7 +21,7 @@ pub struct ${PascalCaseName}{
 
 <#list columns as column > 
     /**
-     * ${column.getColumnComment()}
+     * ${column.getRawComment()}
      */
     pub ${column.getRawName()}:Option<${column.getMapperType()}>,
 }
@@ -36,7 +36,7 @@ pub struct ${PascalCaseName}PagePayload{
 
 <#list columns as column > 
     /**
-     * ${column.getColumnComment()}
+     * ${column.getRawComment()}
      */
     #[serde(rename(deserialize ="params[${column.getRawName()}]"))]
     #[salvo(parameter(rename="params[${column.getRawName()}]"))]

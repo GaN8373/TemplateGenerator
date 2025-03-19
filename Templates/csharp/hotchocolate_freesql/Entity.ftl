@@ -15,9 +15,9 @@ public partial class ${NameUtil.toPascalCase(table.getRawName())} {
 
 <#list columns as column > 
     /// <summary>
-    /// ${column.getColumnComment()}
+    /// ${column.getRawComment()}
     /// </summary>
-    [Column(Name = "${column.getRawName()}" <#if column.hasPrimaryKey()>, IsPrimary=true</#if>)
+    [Column(Name = "${column.getRawName()}" <#if column.hasPrimaryKey()>, IsPrimary=true</#if>)]
     private ${column.getMapperType()} ${NameUtil.toPascalCase(column.getRawName())};
 </#list>
 

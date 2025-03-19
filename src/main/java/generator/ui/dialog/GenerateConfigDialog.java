@@ -9,6 +9,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -23,6 +24,7 @@ import generator.ui.components.ListCheckboxComponent;
 import generator.util.NameUtil;
 import generator.util.StaticUtil;
 import generator.util.TemplateUtil;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -36,8 +38,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GenerateConfigDialog extends DialogWrapper {
-    private static final String SPLIT_TAG_REGEX = "#region config";
-    private static final String SPLIT_TAG = "#endregion";
     private final ScopeState scopeState;
     private final Project project;
     private final AnActionEvent event;
@@ -89,12 +89,19 @@ public class GenerateConfigDialog extends DialogWrapper {
             return;
         }
 
+        var globalState = GlobalStateService.getInstance().getState();
+
         var dir = Path.of(templatePath);
+        var file = dir.toFile();
+        if (!file.exists()) {
+            templateGroupSelected.removeItem(templatePath);
+            globalState.getHistoryUsePath().remove(templatePath);
+            return;
+        }
 
         try (var templateGroup = Files.list(dir)) {
             if (!templatePath.isBlank()) {
-                var globalState = GlobalStateService.getInstance().getState();
-                if (!globalState.getHistoryUsePath().contains(templatePath)) {
+                 if (!globalState.getHistoryUsePath().contains(templatePath)) {
                     templateGroupSelected.insertItemAt(templatePath, 0);
                 }
                 globalState.getHistoryUsePath().add(templatePath);
@@ -164,23 +171,13 @@ public class GenerateConfigDialog extends DialogWrapper {
         var globalState = GlobalStateService.getInstance().getState();
 
         var fileNameMapTemplate = new HashMap<String, String>();
-        var fileNameMapConfig = new HashMap<String, String>();
         try {
             for (var path : scopeState.getSelectedTemplatePath()) {
                 var strings = Files.readString(path);
-
-
-                if (strings.length() > SPLIT_TAG.length() + 1) {
+                if (strings.length() > TemplateUtil.SPLIT_TAG.length() + 1) {
                     var fileName = path.getFileName().toString().split("\\.")[0];
 
-                    var endIndex = strings.lastIndexOf(SPLIT_TAG);
-                    var matcher = strings.substring(strings.indexOf(SPLIT_TAG_REGEX), endIndex);
-                    var group = matcher.replace(SPLIT_TAG_REGEX, "");
-                    if (!StringUtil.isEmpty(group)) {
-                        fileNameMapConfig.put(fileName, group);
-                    }
-
-                    fileNameMapTemplate.put(fileName, strings.substring(endIndex + SPLIT_TAG.length()));
+                    fileNameMapTemplate.put(fileName, strings);
                 }
             }
         } catch (IOException e) {
@@ -197,28 +194,24 @@ public class GenerateConfigDialog extends DialogWrapper {
                 try {
                     Template template = new Template(entry.getKey(), entry.getValue(), TemplateUtil.cfg);
                     var root = new HashMap<String, Object>();
-                    root.put("table", tableData.getDbTable());
+                    root.put("table", tableData);
                     root.put("columns", tableData.getColumns());
                     root.put("NameUtil", new NameUtil());
 
-                    var sourceCode = fileNameMapConfig.get(entry.getKey());
-                    TemplateConfig templateConfig = null;
-                    if (sourceCode != null) {
-                        Template configGroup = new Template(entry.getKey() + "Config", sourceCode, TemplateUtil.cfg);
-                        var out = new ByteArrayOutputStream();
-                        configGroup.process(root, new OutputStreamWriter(out, StandardCharsets.UTF_8));
-
-                        var config = out.toString(StandardCharsets.UTF_8);
-
-                        templateConfig = TemplateConfig.fromProperties(config);
+                    String sourceCode;
+                    try (var bo = new ByteArrayOutputStream()) {
+                        template.process(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8));
+                        sourceCode = bo.toString(StandardCharsets.UTF_8);
                     }
-                    if (templateConfig == null) {
-                        templateConfig = new TemplateConfig();
-                    }
+
+                    var extracted = TemplateUtil.extractConfig(TemplateUtil.SPLIT_TAG_REGEX, sourceCode);
+                    var templateConfig = extracted.component1();
+                    sourceCode = extracted.component2();
 
                     var outPath = Path.of(scopeState.getPath(),
                             StringUtil.isEmpty(templateConfig.getDir()) ? "Temp" : templateConfig.getDir(),
                             StringUtil.isEmpty(templateConfig.getFileName()) ? entry.getKey() : templateConfig.getFileName());
+
                     var file = outPath.toFile();
                     if (!file.exists()) {
                         file.getParentFile().mkdirs();
@@ -229,10 +222,15 @@ public class GenerateConfigDialog extends DialogWrapper {
                         }
                     }
 
-                    template.process(root, new OutputStreamWriter(new FileOutputStream(outPath.toString()), StandardCharsets.UTF_8));
+                    try (var writer = new OutputStreamWriter(new FileOutputStream(outPath.toString()), StandardCharsets.UTF_8)) {
+                        writer.write(sourceCode);
+                        writer.flush();
+                    }
                     StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
 
                 } catch (Exception e) {
+                    Messages.showErrorDialog(e.getMessage(), "Error");
+
                     throw new RuntimeException(e);
                 }
             }
@@ -258,6 +256,8 @@ public class GenerateConfigDialog extends DialogWrapper {
         };
 
         chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
+
+        templateGroupSelected.addActionListener(e -> refreshGenerateTemplatePanel());
         templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
 
         refreshTemplateGroupSelect();

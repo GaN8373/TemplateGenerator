@@ -1,38 +1,74 @@
-package generator.util;
+package generator.util
 
-import freemarker.template.Configuration;
-import generator.data.TypeMapper;
+import com.intellij.openapi.util.text.StringUtil
+import freemarker.template.Configuration
+import generator.config.TemplateConfig
+import generator.config.TemplateConfig.Companion.fromProperties
+import generator.data.TypeMapper
+import java.util.regex.Pattern
 
-import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+object TemplateUtil {
+    const val SPLIT_TAG_REGEX: String = "#region config"
+    const val SPLIT_TAG: String = "#endregion"
+    @JvmField
+    var cfg: Configuration = Configuration(Configuration.VERSION_2_3_32)
 
-public class TemplateUtil {
-    public static Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
 
-
-    public static String replaceWithRegexGroups(Collection<TypeMapper> typeMappers, String regexPattern, String inputText, String replacementTemplate) {
-        Pattern pattern = Pattern.compile(regexPattern);
-        Matcher matcher = pattern.matcher(inputText);
+    fun replaceWithRegexGroups(
+        typeMappers: Collection<TypeMapper>,
+        regexPattern: String,
+        inputText: String,
+        replacementTemplate: String
+    ): String {
+        val pattern = Pattern.compile(regexPattern)
+        val matcher = pattern.matcher(inputText)
 
         if (matcher.find()) {
-            String result = replacementTemplate;
-            for (int i = 1; i <= matcher.groupCount(); i++) {
-                String groupValue = matcher.group(i);
+            var result = replacementTemplate
+            for (i in 1..matcher.groupCount()) {
+                var groupValue = matcher.group(i)
                 if (groupValue != null) {
-                    for (TypeMapper typeMapper : typeMappers) {
-                        if (typeMapper.getAction().getConvertor().match(typeMapper.getRule(), groupValue)) {
-                            groupValue = typeMapper.getType();
-                            break;
+                    for (typeMapper in typeMappers) {
+                        if (typeMapper.action.convertor.match(typeMapper.rule, groupValue!!)) {
+                            groupValue = typeMapper.type
+                            break
                         }
                     }
 
-                    result = result.replace("$" + i, groupValue);
+                    result = result.replace("$$i", groupValue!!)
                 }
             }
-            return result;
+            return result
         } else {
-            return replacementTemplate;
+            return replacementTemplate
         }
+    }
+
+
+    @JvmStatic
+    fun extractConfig(region: String, template: String): Pair<TemplateConfig?,String> {
+        val beginIndex = template.indexOf(region)
+        if (beginIndex == -1) {
+            return Pair(null, template)
+        }
+
+        var endIndex = template.substring(beginIndex + region.length).indexOf(SPLIT_TAG)
+        while (endIndex < beginIndex) {
+            if (endIndex == -1) {
+                return Pair(null, template)
+            }
+            endIndex = template.substring(endIndex + SPLIT_TAG.length).indexOf(SPLIT_TAG)
+        }
+        endIndex += beginIndex + region.length
+
+        val sourceCode = template.substring(endIndex + SPLIT_TAG.length).trim()
+
+        val matcher = template.substring(beginIndex, endIndex)
+        val configStr = matcher.replace(region, "").trim()
+        if (StringUtil.isEmpty(configStr)) {
+            return Pair(null, sourceCode)
+        }
+
+        return Pair(fromProperties(configStr), sourceCode)
     }
 }

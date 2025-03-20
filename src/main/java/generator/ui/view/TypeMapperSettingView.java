@@ -15,12 +15,12 @@ import generator.data.TypeMapper;
 import generator.interfaces.impl.GlobalStateService;
 import generator.interfaces.impl.listener.TypeMappingTableMouseListener;
 import generator.util.StaticUtil;
-import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -179,7 +179,8 @@ public class TypeMapperSettingView implements Configurable {
                 if (file.exists()) {
                     file = Path.of(path, "%s_%d.json".formatted(item, System.currentTimeMillis())).toFile();
                 }
-                var w = new FileWriterWithEncoding(file, StandardCharsets.UTF_8);
+
+                var w = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8);
                 StaticUtil.getJSON().writeValue(w, typeMappers);
             } catch (IOException ex) {
                 StaticUtil.showWarningNotification("Json", virtualFile.getName() + "Json Serialize Failed", ProjectManager.getInstance().getDefaultProject(), NotificationType.WARNING);

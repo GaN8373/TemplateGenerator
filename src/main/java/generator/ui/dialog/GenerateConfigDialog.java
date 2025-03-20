@@ -1,9 +1,10 @@
 package generator.ui.dialog;
 
+import com.intellij.database.model.DasNamed;
+import com.intellij.database.model.DasTable;
 import com.intellij.database.psi.DbTable;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -12,13 +13,12 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import freemarker.template.Template;
 import generator.config.ScopeState;
 import generator.data.table.TableData;
 import generator.interfaces.impl.GlobalStateService;
-import generator.interfaces.impl.layout.DoubleColumnLayout;
-import generator.interfaces.impl.layout.SingleColumnLayout;
+import generator.ui.layout.DoubleColumnLayout;
+import generator.ui.layout.SingleColumnLayout;
 import generator.ui.components.ListCheckboxComponent;
 import generator.util.DasUtil;
 import generator.util.NameUtil;
@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GenerateConfigDialog extends DialogWrapper {
     private final ScopeState scopeState;
@@ -138,22 +139,14 @@ public class GenerateConfigDialog extends DialogWrapper {
 
     private void initDatabaseTreeState() {
         //获取选中的所有表
-        PsiElement[] psiElements = event.getData(LangDataKeys.PSI_ELEMENT_ARRAY);
-        if (psiElements == null || psiElements.length == 0) {
-            return;
-        }
         // 获取当前项目所有数据源
-        var allTables = new HashMap<String, DbTable>(16);
-        Set<String> selectDbTable = new LinkedHashSet<>();
-        for (PsiElement element : psiElements) {
-            if (element instanceof DbTable dbTable) {
-                allTables.put(dbTable.getName(), dbTable);
-                selectDbTable.add(dbTable.getName());
-            }
-        }
-        for (var dbTable : DasUtil.extractTables(psiElements[0])) {
-            allTables.put(dbTable.getName(), dbTable);
-        }
+        var allTables = new HashMap<String, DasTable>(16);
+
+        var dbTables = DasUtil.extractTableFromDatabase(event.getDataContext());
+        var selectTables = DasUtil.extractSelectTablesFromPsiElement(event.getDataContext()).map(DasNamed::getName).collect(Collectors.toSet());
+
+        dbTables.forEach(x -> allTables.put(x.getName(), x));
+
         if (allTables.isEmpty()) {
             return;
         }
@@ -163,9 +156,19 @@ public class GenerateConfigDialog extends DialogWrapper {
             model.addElement(table);
         }
 
-        var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.keySet());
+        var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.values().stream().sorted((a,b)->{
+            if (a.getDasParent() == null) {
+                return 1;
+            }
+            if (b.getDasParent() == null) {
+                return -1;
+            }
+            var i = b.getDasParent().getName().compareTo(a.getDasParent().getName());
+            return i == 0 ? b.getName().compareTo(a.getName()) : i;
+        }).map(DasNamed::getName).toList());
+
         tables.getCheckBoxList().forEach(x -> {
-            if (selectDbTable.contains(x.getText())) {
+            if (selectTables.contains(x.getText())) {
                 x.setSelected(true);
             }
         });

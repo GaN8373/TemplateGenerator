@@ -3,8 +3,9 @@ package generator.ui.components
 import com.intellij.ui.components.JBCheckBox
 import generator.interfaces.ILayoutDelegate
 import java.awt.Component
-import java.util.function.Consumer
+import javax.swing.AbstractButton
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 
 /**
  * 列表复选框组件
@@ -24,7 +25,7 @@ class ListCheckboxComponent(
     /**
      * 复选框列表
      */
-    var checkBoxList: Collection<JBCheckBox>? = null
+    var checkBoxList: Collection<AbstractButton>? = null
         private set
 
 

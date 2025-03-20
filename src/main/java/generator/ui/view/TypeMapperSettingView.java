@@ -13,7 +13,6 @@ import generator.config.GlobalState;
 import generator.data.TableRowData;
 import generator.data.TypeMapper;
 import generator.interfaces.impl.GlobalStateService;
-import generator.interfaces.impl.listener.TypeMappingTableMouseListener;
 import generator.util.StaticUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -207,13 +206,6 @@ public class TypeMapperSettingView implements Configurable {
         var defaultCellEditor = new DefaultCellEditor(new JComboBox<>(MapperAction.getEntries().stream().map(Enum::name).toArray()));
 
         typeMappingTable.getColumnModel().getColumn(0).setCellEditor(defaultCellEditor);
-
-        for (var mouseListener : typeMappingTable.getMouseListeners()) {
-            if (mouseListener instanceof TypeMappingTableMouseListener) {
-                typeMappingTable.removeMouseListener(mouseListener);
-            }
-        }
-        typeMappingTable.addMouseListener(new TypeMappingTableMouseListener(globalState, typeMappingTable));
 
         for (var actionListener : newRowButton.getActionListeners()) {
             newRowButton.removeActionListener(actionListener);

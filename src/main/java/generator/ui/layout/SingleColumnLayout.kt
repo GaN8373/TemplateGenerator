@@ -1,10 +1,11 @@
-package generator.interfaces.impl.layout
+package generator.ui.layout
 
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.components.JBCheckBox
 import generator.interfaces.ILayoutDelegate
 import java.awt.Component
 import java.awt.LayoutManager
+import javax.swing.AbstractButton
 
 
 class SingleColumnLayout : ILayoutDelegate {
@@ -15,7 +16,7 @@ class SingleColumnLayout : ILayoutDelegate {
     override fun initContainer(
         items: Collection<String>,
         addComponent: (Component, Any?) -> Void?
-    ): Collection<JBCheckBox> {
+    ): Collection<AbstractButton> {
         val checkBoxList = ArrayList<JBCheckBox>(items.size)
 
         for (item in items) {

@@ -1,18 +1,19 @@
 package generator.data.table
 
 import com.intellij.database.model.DasColumn
+import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbTable
 import generator.data.TypeMapper
 
-class TableData(val dbTable: DbTable, private val typeMapper: Collection<TypeMapper>) {
+class TableData(val dbTable: DasTable, private val typeMapper: Collection<TypeMapper>) {
 
     fun getRawName(): String {
         return dbTable.name
     }
 
     fun getParent(): DbStructData{
-       return DbStructData(dbTable.parent)
+       return DbStructData(dbTable.dasParent)
     }
 
 

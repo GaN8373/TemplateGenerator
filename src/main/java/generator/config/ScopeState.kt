@@ -1,5 +1,6 @@
 package generator.config
 
+import com.intellij.database.model.DasTable
 import com.intellij.database.psi.DbTable
 import com.intellij.openapi.project.Project
 import generator.ui.components.ListCheckboxComponent
@@ -12,7 +13,7 @@ class ScopeState(
     val pathInput: JTextField?,
     val templateGroup: JComboBox<String>?,
     val typeMappingSelected: JComboBox<String>) {
-    private var allTables: Map<String, DbTable>? = null
+    private var allTables: Map<String, DasTable>? = null
     private var selectTableComponent: ListCheckboxComponent? = null
 
     fun getTemplateGroupTextField(): JTextField {
@@ -35,13 +36,13 @@ class ScopeState(
     fun getSelectTypeMapping(): String? {
         return typeMappingSelected.selectedItem?.toString()
     }
-    fun setAllTableAndComponent(allTables: Map<String, DbTable>, component: ListCheckboxComponent) {
+    fun setAllTableAndComponent(allTables: Map<String, DasTable>, component: ListCheckboxComponent) {
 
         this.allTables = allTables
         this.selectTableComponent = component
     }
 
-    fun getSelectedTables(): Set<DbTable> {
+    fun getSelectedTables(): Set<DasTable> {
         val selectedItems = selectTableComponent?.selectedItems;
 
         return selectedItems?.mapNotNull {

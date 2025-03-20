@@ -1,9 +1,10 @@
 package generator.data.table
 
+import com.intellij.database.model.DasObject
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbElement
 
-class DbStructData (val parent: DbElement?) {
+class DbStructData (val parent: DasObject?) {
     fun getRawName(): String{
         return parent?.name ?: ""
     }

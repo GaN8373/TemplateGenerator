@@ -1,4 +1,4 @@
-package generator.interfaces.impl.layout
+package generator.ui.layout
 
 import com.intellij.ui.components.JBCheckBox
 import generator.interfaces.ILayoutDelegate
@@ -6,6 +6,7 @@ import java.awt.Component
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.LayoutManager
+import javax.swing.AbstractButton
 
 class DoubleColumnLayout : ILayoutDelegate {
     override fun getLayoutManager(): LayoutManager {
@@ -15,7 +16,7 @@ class DoubleColumnLayout : ILayoutDelegate {
     override fun initContainer(
         items: Collection<String>,
         addComponent: (Component, Any?) -> Void?
-    ): Collection<JBCheckBox> {
+    ): Collection<AbstractButton> {
         val checkBoxList = ArrayList<JBCheckBox>(items.size)
 
         val gbc = GridBagConstraints()

@@ -28,6 +28,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -56,6 +58,8 @@ public class GenerateConfigDialog extends DialogWrapper {
     private JButton selectAllButton;
     private JButton clearSelectAllButton;
     private JButton tableSelectButton;
+    private JTextField namespaceTextField;
+    private JCheckBox namespaceLockCheckBox;
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
@@ -218,6 +222,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                     root.put("table", tableData);
                     root.put("columns", tableData.getColumns());
                     root.put("NameUtil", new NameUtil());
+                    root.put("namespace", namespaceTextField.getText());
 
                     String sourceCode;
                     try (var bo = new ByteArrayOutputStream()) {
@@ -275,11 +280,49 @@ public class GenerateConfigDialog extends DialogWrapper {
             VirtualFile virtualFile = FileChooser.chooseFile(descriptor, project, null);
             return Optional.ofNullable(virtualFile);
         };
-        pathInput.setText(project.getBasePath());
         chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
 
         templateGroupSelected.addActionListener(e -> refreshGenerateTemplatePanel());
         templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
+        pathInput.setText(project.getBasePath());
+        namespaceTextField.setText(project.getName());
+        pathInput.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateNamespaceTextInput();
+            }
+
+            private void updateNamespaceTextInput() {
+                if (namespaceLockCheckBox.isSelected()) {
+                    return;
+                }
+
+                var beginIndex = pathInput.getText().indexOf(project.getName());
+                if (beginIndex == -1) {
+                    namespaceTextField.setText(pathInput.getText());
+                    return;
+                } else {
+                    beginIndex = beginIndex + project.getName().length();
+                }
+
+                var text = project.getName() + pathInput.getText().substring(beginIndex);
+                if (text.isBlank()) {
+                    namespaceTextField.setText(project.getName());
+                } else {
+                    namespaceTextField.setText(text.replaceAll("[/|\\\\]", "."));
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateNamespaceTextInput();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
+            }
+        });
 
         refreshTemplateGroupSelect();
 

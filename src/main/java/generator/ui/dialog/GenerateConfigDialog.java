@@ -2,7 +2,6 @@ package generator.ui.dialog;
 
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasTable;
-import com.intellij.database.psi.DbTable;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -13,7 +12,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import freemarker.template.Template;
 import generator.config.ScopeState;
 import generator.data.table.TableData;
 import generator.interfaces.impl.GlobalStateService;
@@ -25,6 +23,8 @@ import generator.util.NameUtil;
 import generator.util.StaticUtil;
 import generator.util.TemplateUtil;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GenerateConfigDialog extends DialogWrapper {
     private final ScopeState scopeState;
@@ -220,16 +219,15 @@ public class GenerateConfigDialog extends DialogWrapper {
         scopeState.getSelectedTables().parallelStream().map(x -> new TableData(x, mapperTemplates)).forEach(tableData -> {
             for (var entry : fileNameMapTemplate.entrySet()) {
                 try {
-                    Template template = new Template(entry.getKey(), entry.getValue(), TemplateUtil.cfg);
-                    var root = new HashMap<String, Object>();
+                    var root = new HashMap<String,Object>();
                     root.put("table", tableData);
                     root.put("columns", tableData.getColumns());
-                    root.put("NameUtil", new NameUtil());
+                    root.put("NameUtil", NameUtil.INSTANCE);
                     root.put("namespace", namespaceTextField.getText());
 
                     String sourceCode;
                     try (var bo = new ByteArrayOutputStream()) {
-                        template.process(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8));
+                        TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8),  entry.getKey(),entry.getValue());
                         sourceCode = bo.toString(StandardCharsets.UTF_8);
                     }
 

@@ -1,42 +1,42 @@
-package generator;
+package generator
 
-import com.intellij.database.model.ObjectKind;
-import com.intellij.openapi.actionSystem.*;
-import generator.ui.dialog.GenerateConfigDialog;
-import generator.util.DasUtil;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.database.model.DasObject
+import com.intellij.database.model.ObjectKind
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import generator.ui.dialog.GenerateConfigDialog
+import generator.util.DasUtil
 
-import java.util.Set;
+class TemplateGeneratorPluginsAction() : AnAction() {
 
-public class TemplateGeneratorPluginsAction extends AnAction {
-
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return super.getActionUpdateThread();
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return super.getActionUpdateThread()
     }
 
-    private static final Set<ObjectKind> SUPPORTED_KINDS = Set.of(
+    override fun update(e: AnActionEvent) {
+        val dasObjectStream = DasUtil.extractDatabaseDas(e.dataContext)
+
+        val b = dasObjectStream.anyMatch { x: DasObject -> SUPPORTED_KINDS.contains(x.kind) }
+        e.presentation.isEnabledAndVisible = b
+        super.update(e)
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val tableGenerator = GenerateConfigDialog(e)
+
+        tableGenerator.title = "TemplateGenerator"
+        tableGenerator.setSize(800, 600)
+
+        tableGenerator.show()
+    }
+
+    companion object {
+        private val SUPPORTED_KINDS: Set<ObjectKind> = mutableSetOf(
             ObjectKind.TABLE,
             ObjectKind.VIEW,
             ObjectKind.SCHEMA,
             ObjectKind.DATABASE
-    );
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        var dasObjectStream = DasUtil.extractDatabaseDas(e.getDataContext());
-
-        var b = dasObjectStream.anyMatch(x -> SUPPORTED_KINDS.contains(x.getKind()));
-        e.getPresentation().setEnabledAndVisible(b);
-        super.update(e);
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-        var tableGenerator = new GenerateConfigDialog(e);
-
-        tableGenerator.setTitle("TemplateGenerator");
-        tableGenerator.setSize(800, 600);
-
-        tableGenerator.show();
+        )
     }
 }

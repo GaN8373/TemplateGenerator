@@ -1,19 +1,16 @@
-package generator.util;
+package generator.util
 
-import com.intellij.database.model.*;
-import com.intellij.database.psi.*;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKey;
-import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.stream.Stream;
+import com.intellij.database.model.DasColumn
+import com.intellij.database.model.DasObject
+import com.intellij.database.model.DasTable
+import com.intellij.database.model.ObjectKind
+import com.intellij.database.psi.DbTable
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.DataKey
+import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.psi.PsiElement
+import java.util.*
+import java.util.stream.Stream
 
 /**
  * 兼容工具
@@ -21,11 +18,10 @@ import java.util.stream.Stream;
  * @author makejava
  * @date 2023/04/04 17:08
  */
-public class DasUtil {
-
-    public static String getDataType(DasColumn dasColumn) {
-        return dasColumn.getDasType().getSpecification();
-//        try {
+object DasUtil {
+    fun getDataType(dasColumn: DasColumn): String {
+        return dasColumn.dasType.specification
+        //        try {
 //            // 兼容2022.3.3及以上版本
 //            Method getDasTypeMethod = dasColumn.getClass().getMethod("getDasType");
 //            Object dasType = getDasTypeMethod.invoke(dasColumn);
@@ -42,46 +38,70 @@ public class DasUtil {
 //        }
     }
 
-    public static boolean hasAttribute(@Nullable DasColumn column, @NotNull DasColumn.@NotNull Attribute attribute) {
-        DasTable table = column == null ? null : column.getTable();
-        return table != null && table.getColumnAttrs(column).contains(attribute);
+    @JvmStatic
+    fun hasAttribute(column: DasColumn, attribute: DasColumn.Attribute): Boolean {
+        val table = column.table
+        return table != null && table.getColumnAttrs(column).contains(attribute)
     }
 
 
-    public static Stream<DbTable> extractSelectTablesFromPsiElement(@NotNull DataContext event) {
-        PsiElement[] psiElements = event.getData(LangDataKeys.PSI_ELEMENT_ARRAY);
-        if (psiElements == null || psiElements.length == 0) {
-            return Stream.empty();
+    @JvmStatic
+    fun extractSelectTablesFromPsiElement(event: DataContext): Stream<DbTable> {
+        val psiElements = event.getData(LangDataKeys.PSI_ELEMENT_ARRAY)
+        if (psiElements.isNullOrEmpty()) {
+            return Stream.empty()
         }
 
-        return Arrays.stream(psiElements).filter(element -> element instanceof DbTable).map(element -> (DbTable) element);
+        return Arrays.stream(psiElements).filter { it is DbTable }
+            .map { it as DbTable }
     }
 
-    public static Stream<DasObject> extractDatabaseDas(DataContext context) {
-        var databaseElements = context.getData(DataKey.create("DATABASE_ELEMENTS"));
-        if (databaseElements instanceof Object[] array) {
-            return Arrays.stream(array).filter(o -> o instanceof DasObject).map(o -> (DasObject) o);
+    @JvmStatic
+    fun extractDatabaseDas(context: DataContext): Stream<DasObject> {
+        val databaseElements = context.getData(DataKey.create<Any>("DATABASE_ELEMENTS"))
+        if (databaseElements is Array<*> && databaseElements.isArrayOf<Any>()) {
+            return Arrays.stream(databaseElements).filter { it is DasObject }.map { it as DasObject }
         }
 
-        return Stream.empty();
+        return Stream.empty()
     }
 
-    public static Stream<DasTable> extractTableFromDatabase(DataContext context) {
-        var databaseElements = extractDatabaseDas(context);
-        return databaseElements.flatMap(DasUtil::extractAllTableFromDas);
+    @JvmStatic
+    fun extractTableFromDatabase(context: DataContext): Stream<DasTable> {
+        val databaseElements = extractDatabaseDas(context)
+        return databaseElements.flatMap { extractAllTableFromDas(it) }
     }
 
-    public static Stream<DasTable> extractAllTableFromDas(DasObject namespace) {
-        if (namespace.getKind() == ObjectKind.DATABASE) {
-            var set = namespace.getDasChildren(ObjectKind.SCHEMA).flatMap(s -> s.getDasChildren(ObjectKind.TABLE).filter(DasTable.class)).toStream();
-            return Stream.concat(set, namespace.getDasChildren(ObjectKind.TABLE).filter(DbTable.class).toStream());
-        } else if (namespace.getKind() == ObjectKind.SCHEMA) {
-            return namespace.getDasChildren(ObjectKind.TABLE).filter(DasTable.class).toStream();
-        } else if (namespace.getKind() == ObjectKind.TABLE && namespace.getDasParent() != null) {
-            return namespace.getDasParent().getDasChildren(ObjectKind.TABLE).filter(DasTable.class).toStream();
+    @JvmStatic
+    fun extractAllTableFromDas(namespace: DasObject): Stream<DasTable> {
+        return when (namespace.kind) {
+            ObjectKind.DATABASE -> Stream.concat(
+                namespace.getDasChildren(ObjectKind.SCHEMA).toStream().flatMap { extractChildTable(it) },
+                extractChildTable(namespace)
+            )
+
+            ObjectKind.SCHEMA -> extractChildTable(namespace)
+            ObjectKind.TABLE, ObjectKind.VIEW -> when (namespace.dasParent) {
+                null -> Stream.empty()
+                else -> extractChildTable(namespace.dasParent!!)
+            }
+
+            else -> Stream.empty()
         }
-
-        return Stream.empty();
     }
 
+    /**
+     * 获取子表
+     * @param namespace
+     * @return
+     */
+    @JvmStatic
+    private fun extractChildTable(namespace: DasObject): Stream<DasTable> {
+        return Stream.concat(
+            namespace.getDasChildren(ObjectKind.TABLE).toStream(),
+            namespace.getDasChildren(ObjectKind.VIEW).toStream()
+        )
+            .filter { it is DasTable }
+            .map { it as DasTable }
+    }
 }

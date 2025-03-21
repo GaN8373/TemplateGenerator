@@ -3,17 +3,30 @@ package generator.util
 import com.intellij.database.model.DasColumn
 import com.intellij.openapi.util.text.StringUtil
 import freemarker.template.Configuration
+import freemarker.template.Template
 import generator.MapperAction
 import generator.config.TemplateConfig
 import generator.config.TemplateConfig.Companion.fromProperties
 import generator.data.TypeMapper
+import java.io.Writer
 import java.util.regex.Pattern
+
 
 object TemplateUtil {
     const val SPLIT_TAG_REGEX: String = "#region config"
     const val SPLIT_TAG: String = "#endregion"
+
     @JvmField
     var cfg: Configuration = Configuration(Configuration.VERSION_2_3_32)
+
+
+    @JvmStatic
+    fun evaluate(context: Map<String, Any>, writer: Writer, templateName: String, template: String): Boolean {
+        val engine = Template(templateName, template, cfg)
+
+        engine.process(context, writer)
+        return true
+    }
 
 
     private fun replaceWithRegexGroups(
@@ -48,7 +61,7 @@ object TemplateUtil {
 
 
     @JvmStatic
-    fun extractConfig(region: String, template: String): Pair<TemplateConfig?,String> {
+    fun extractConfig(region: String, template: String): Pair<TemplateConfig?, String> {
         val beginIndex = template.indexOf(region)
         if (beginIndex == -1) {
             return Pair(null, template)

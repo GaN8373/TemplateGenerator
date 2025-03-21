@@ -1,129 +1,130 @@
-package generator.util;
+package generator.util
 
-import org.jetbrains.annotations.Nullable;
+import java.util.*
+import java.util.regex.Pattern
 
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+object NameUtil {
 
-public class NameUtil {
-    static Pattern WordMatch = Pattern.compile("[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+");
+    val WordMatch: Pattern = Pattern.compile("[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+")
 
     /**
      * Camel Case: 首字母小写，后续每个单词首字母大写
      */
-    public static @Nullable String toCamelCase(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
+    @JvmStatic
+    fun toCamelCase(input: String?): String? {
+        if (input.isNullOrEmpty()) {
+            return input
         }
 
-        var sb = toPascalCase(input);
+        val sb = checkNotNull(toPascalCase(input))
 
-        assert sb != null;
-        if (!sb.isEmpty()) {
-            return sb.substring(0, 1).toLowerCase() + sb.substring(1);
+        return if (sb.isNotEmpty()) {
+            sb.substring(0, 1).lowercase(Locale.getDefault()) + sb.substring(1)
         } else {
-            return "";
+            ""
         }
     }
 
     /**
      * Pascal Case: 每个单词的首字母都大写
      */
-    public static @Nullable String toPascalCase(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
+    @JvmStatic
+    fun toPascalCase(input: String?): String? {
+        if (input.isNullOrEmpty()) {
+            return input
         }
 
-        Matcher matcher = WordMatch.matcher(input);
-        StringBuilder sb = new StringBuilder();
+        val matcher = WordMatch.matcher(input)
+        val sb = StringBuilder()
 
         while (matcher.find()) {
-            String match = matcher.group();
-            if (!match.isEmpty()) {
-                sb.append(match.substring(0, 1).toUpperCase());
-                if (match.length() > 1) {
-                    sb.append(match.substring(1).toLowerCase());
+            val match = matcher.group()
+            if (match.isNotEmpty()) {
+                sb.append(match.substring(0, 1).uppercase(Locale.getDefault()))
+                if (match.length > 1) {
+                    sb.append(match.substring(1).lowercase(Locale.getDefault()))
                 }
             }
         }
-        return sb.toString();
+        return sb.toString()
     }
 
 
     /**
      * Snake Case: 所有字母小写，单词之间用下划线连接
      */
-    public static @Nullable String toSnakeCase(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
+    @JvmStatic
+    fun toSnakeCase(input: String?): String? {
+        if (input.isNullOrEmpty()) {
+            return input
         }
-        Matcher matcher = WordMatch.matcher(input);
-        StringBuilder sb = new StringBuilder();
-        boolean firstMatch = true;
+        val matcher = WordMatch.matcher(input)
+        val sb = StringBuilder()
+        var firstMatch = true
 
         while (matcher.find()) {
-            String match = matcher.group();
-            if (!match.isEmpty()) {
+            val match = matcher.group()
+            if (match.isNotEmpty()) {
                 if (!firstMatch) {
-                    sb.append("_");
+                    sb.append("_")
                 }
-                sb.append(match.toLowerCase());
-                firstMatch = false;
+                sb.append(match.lowercase(Locale.getDefault()))
+                firstMatch = false
             }
         }
 
-        return sb.toString();
+        return sb.toString()
     }
 
     /**
      * Kebab Case: 所有字母小写，单词之间用连字符连接
      */
-    public static @Nullable String toKebabCase(String input) {
+    @JvmStatic
+    fun toKebabCase(input: String?): String? {
         if (input == null || input.isEmpty()) {
-            return input;
+            return input
         }
-        Matcher matcher = WordMatch.matcher(input);
-        StringBuilder sb = new StringBuilder();
-        boolean firstMatch = true;
+        val matcher = WordMatch.matcher(input)
+        val sb = StringBuilder()
+        var firstMatch = true
 
         while (matcher.find()) {
-            String match = matcher.group();
-            if (!match.isEmpty()) {
+            val match = matcher.group()
+            if (match.isNotEmpty()) {
                 if (!firstMatch) {
-                    sb.append("-");
+                    sb.append("-")
                 }
-                sb.append(match.toLowerCase());
-                firstMatch = false;
+                sb.append(match.lowercase(Locale.getDefault()))
+                firstMatch = false
             }
         }
 
-        return sb.toString();
+        return sb.toString()
     }
 
     /**
      * Screaming Snake Case: 所有字母大写，单词之间用下划线连接
      */
-    public static @Nullable String toScreamingSnakeCase(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
+    @JvmStatic
+    fun toScreamingSnakeCase(input: String?): String? {
+        if (input.isNullOrEmpty()) {
+            return input
         }
-        Matcher matcher = WordMatch.matcher(input);
-        StringBuilder sb = new StringBuilder();
-        boolean firstMatch = true;
+        val matcher = WordMatch.matcher(input)
+        val sb = StringBuilder()
+        var firstMatch = true
 
         while (matcher.find()) {
-            String match = matcher.group();
-            if (!match.isEmpty()) {
+            val match = matcher.group()
+            if (match.isNotEmpty()) {
                 if (!firstMatch) {
-                    sb.append("_");
+                    sb.append("_")
                 }
-                sb.append(match.toUpperCase(Locale.ROOT));
-                firstMatch = false;
+                sb.append(match.uppercase())
+                firstMatch = false
             }
         }
 
-        return sb.toString();
+        return sb.toString()
     }
-
 }

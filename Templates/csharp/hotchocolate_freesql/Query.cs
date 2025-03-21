@@ -1,5 +1,8 @@
+<#assign PascalCaseName=NameUtil.toPascalCase(table.getRawName())>
+<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
+<#assign DbStructData=table.getParent()>
 #region config
-fileName=Query${NameUtil.toPascalCase(table.getRawName())}.cs
+fileName=Query${PascalCaseName}.cs
 dir=QueryEndpoint
 #endregion
 
@@ -10,14 +13,17 @@ using HotChocolate.Resolvers;
 /// </summary>
 
 [QueryType]
-public static class Query${NameUtil.toPascalCase(table.getRawName())}
+public static class Query${PascalCaseName}
 {
+    /// <summary>
+    /// 查询 ${table.getRawComment()}
+    /// </summary>
     [UsePaging]
     [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public static IQueryable<${NameUtil.toPascalCase(table.getRawName())}> Query${NameUtil.toPascalCase(table.getRawName())}(IResolverContext context, [Service] IFreeSql db)
+    public static IQueryable<${PascalCaseName}> Get${PascalCaseName}(IResolverContext context, [Service] IFreeSql db)
     {
-        return db.Select<${NameUtil.toPascalCase(table.getRawName())}>().AsQueryable();
+        return db.Select<${PascalCaseName}>().AsQueryable();
     }
 }

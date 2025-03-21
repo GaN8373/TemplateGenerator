@@ -1,5 +1,9 @@
+<#assign PascalCaseName=NameUtil.toPascalCase(table.getRawName())>
+<#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
+<#assign primarys=table.getPrimaryColumns()>
+<#assign DbStructData=table.getParent()>
 #region config
-fileName=Mutation${NameUtil.toPascalCase(table.getRawName())}.cs
+fileName=Mutation${PascalCaseName}.cs
 dir=MutationEndpoint
 #endregion
 
@@ -8,7 +12,7 @@ using HotChocolate.Resolvers;
 /// 增删改 ${table.getRawComment()}
 /// </summary>
 [MutationType]
-public static class Mutation${NameUtil.toPascalCase(table.getRawName())}
+public static class Mutation${PascalCaseName}
 {
     /// <summary>
     /// 新增 ${table.getRawComment()}
@@ -16,7 +20,7 @@ public static class Mutation${NameUtil.toPascalCase(table.getRawName())}
     /// <param name="context"></param>
     /// <param name="input"></param>
     /// <returns></returns>
-    public static async Task<${NameUtil.toPascalCase(table.getRawName())}> Add${NameUtil.toPascalCase(table.getRawName())}([Service]IFreeSql context, ${NameUtil.toPascalCase(table.getRawName())} input)
+    public static async Task<${PascalCaseName}> Add${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
         var result = await context.Insert(input).ExecuteInsertedAsync();
         return result.FirstOrDefault();
@@ -28,9 +32,9 @@ public static class Mutation${NameUtil.toPascalCase(table.getRawName())}
     /// <param name="context"></param>
     /// <param name="input"></param>
     /// <returns></returns>
-    public static async Task<${NameUtil.toPascalCase(table.getRawName())}> Update${NameUtil.toPascalCase(table.getRawName())}([Service]IFreeSql context, ${NameUtil.toPascalCase(table.getRawName())} input)
+    public static async Task<${PascalCaseName}> Update${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
-        var result = await context.Update<${NameUtil.toPascalCase(table.getRawName())}>().SetSource(input).ExecuteUpdatedAsync();
+        var result = await context.Update<${PascalCaseName}>().SetSource(input).ExecuteUpdatedAsync();
         return result.FirstOrDefault();
     }
 
@@ -40,9 +44,13 @@ public static class Mutation${NameUtil.toPascalCase(table.getRawName())}
     /// <param name="context"></param>
     /// <param name="id"></param>
     /// <returns></returns> 
-    public static async Task<${NameUtil.toPascalCase(table.getRawName())}> Delete${NameUtil.toPascalCase(table.getRawName())}([Service]IFreeSql context, long id)
+    public static async Task<${PascalCaseName}> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
     {
-        var result = await context.Delete<${NameUtil.toPascalCase(table.getRawName())}>().Where(a => a.Id == id).ExecuteDeletedAsync();
+        var result = await context.Delete<${PascalCaseName}>()
+        <#list primarys as column >
+        .Where(x => x.${NameUtil.toPascalCase(column.getRawName())} == ${NameUtil.toCamelCase(column.getRawName())})
+        </#list>
+        .ExecuteDeletedAsync();
         return result.FirstOrDefault();
     }
 

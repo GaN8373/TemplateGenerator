@@ -1,3 +1,4 @@
+<#assign DbStructData=table.getParent()>
 #region config
 fileName=${NameUtil.toPascalCase(table.getRawName())}.cs
 dir=Entity
@@ -10,7 +11,7 @@ using FreeSql.DataAnnotations;
 /// <remarks>
 /// @Date ${.now?string('yyyy-MM-dd HH:mm:ss')}
 /// </remarks>
-[Table(Name = "${table.getRawName()}")]
+[Table(Name = "<#if DbStructData.hasSchema()>${DbStructData.getRawName()}.</#if>${table.getRawName()}")]
 public partial class ${NameUtil.toPascalCase(table.getRawName())} {
 
 <#list columns as column > 
@@ -18,7 +19,7 @@ public partial class ${NameUtil.toPascalCase(table.getRawName())} {
     /// ${column.getRawComment()}
     /// </summary>
     [Column(Name = "${column.getRawName()}" <#if column.hasPrimaryKey()>, IsPrimary=true</#if>)]
-    private ${column.getMapperType()} ${NameUtil.toPascalCase(column.getRawName())};
+    public ${column.getMapperType()} ${NameUtil.toPascalCase(column.getRawName())} {get;set;}
 </#list>
 
 }

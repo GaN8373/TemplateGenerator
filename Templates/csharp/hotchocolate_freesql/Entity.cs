@@ -8,9 +8,6 @@ using FreeSql.DataAnnotations;
 /// <summary>
 /// ${table.getRawComment()}
 /// </summary>
-/// <remarks>
-/// @Date ${.now?string('yyyy-MM-dd HH:mm:ss')}
-/// </remarks>
 [Table(Name = "<#if DbStructData.hasSchema()>${DbStructData.getRawName()}.</#if>${table.getRawName()}")]
 public partial class ${NameUtil.toPascalCase(table.getRawName())} {
 

@@ -17,8 +17,8 @@ public static class Mutation${PascalCaseName}
     /// <summary>
     /// 新增 ${table.getRawComment()}
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="input"></param>
+    /// <param name="context">auto injected</param>
+    /// <param name="input">add param</param>
     /// <returns></returns>
     public static async Task<${PascalCaseName}> Add${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
@@ -29,8 +29,8 @@ public static class Mutation${PascalCaseName}
     /// <summary>
     /// 修改 ${table.getRawComment()}
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="input"></param>
+    /// <param name="context">auto injected</param>
+    /// <param name="input">update param</param>
     /// <returns></returns>
     public static async Task<${PascalCaseName}> Update${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
@@ -41,8 +41,10 @@ public static class Mutation${PascalCaseName}
     /// <summary>
     /// 删除 ${table.getRawComment()}
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="id"></param>
+    /// <param name="context">auto injected</param>
+    <#list primarys as column >
+    /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment}</param>
+        </#list>
     /// <returns></returns> 
     public static async Task<${PascalCaseName}> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
     {

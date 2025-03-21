@@ -7,11 +7,11 @@
 
     <description><![CDATA[
         <p>
-        By using custom templates, you can read database information from the jetbrains.database plugin to generate code in any language. This makes it convenient to generate CRUD (Create, Read, Update, Delete) operations. Please refer to the github wiki for how to write it.
+        By using custom templates, you can read database information from the jetbrains.database plugin to generate code in any language. This makes it convenient to generate CRUD (Create, Read, Update, Delete) operations. Please refer to the github wiki for how to write it.(<a href="https://github.com/GaN8373/TemplateGenerator/wiki/APIs">https://github.com/GaN8373/TemplateGenerator/wiki/APIs</a>)
         </p>
 
         <p>
-        通过自定义模板, 读取jetbrains.database插件的数据库信息生成任意语言的代码. 方便生成增删改查. 如何编写请参阅github wiki.
+        通过自定义模板, 读取jetbrains.database插件的数据库信息生成任意语言的代码. 方便生成增删改查. 如何编写请参阅github wiki(<a href="https://github.com/GaN8373/TemplateGenerator/wiki/APIs">https://github.com/GaN8373/TemplateGenerator/wiki/APIs</a>).
         </p>
     ]]></description>
 

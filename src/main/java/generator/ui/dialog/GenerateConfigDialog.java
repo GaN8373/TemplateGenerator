@@ -155,7 +155,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             model.addElement(table);
         }
 
-        var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.values().stream().sorted((a,b)->{
+        var tables = new ListCheckboxComponent(new SingleColumnLayout(), allTables.values().stream().sorted((a, b) -> {
             if (a.getDasParent() == null) {
                 return 1;
             }
@@ -219,7 +219,7 @@ public class GenerateConfigDialog extends DialogWrapper {
         scopeState.getSelectedTables().parallelStream().map(x -> new TableData(x, mapperTemplates)).forEach(tableData -> {
             for (var entry : fileNameMapTemplate.entrySet()) {
                 try {
-                    var root = new HashMap<String,Object>();
+                    var root = new HashMap<String, Object>();
                     root.put("table", tableData);
                     root.put("columns", tableData.getColumns());
                     root.put("NameUtil", NameUtil.INSTANCE);
@@ -227,7 +227,7 @@ public class GenerateConfigDialog extends DialogWrapper {
 
                     String sourceCode;
                     try (var bo = new ByteArrayOutputStream()) {
-                        TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8),  entry.getKey(),entry.getValue());
+                        TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8), entry.getKey(), entry.getValue());
                         sourceCode = bo.toString(StandardCharsets.UTF_8);
                     }
 
@@ -287,6 +287,17 @@ public class GenerateConfigDialog extends DialogWrapper {
         templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
         pathInput.setText(project.getBasePath());
         namespaceTextField.setText(project.getName());
+        namespaceTextField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                namespaceLockCheckBox.setSelected(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
         pathInput.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

@@ -1,0 +1,127 @@
+[
+  {
+    "action": "StartsWith",
+    "rule": "TIME",
+    "type": "kotlin.time.Duration"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TEXT",
+    "type": "String"
+  },
+  {
+    "action": "Eq",
+    "rule": "SMALLINT",
+    "type": "Short"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "VARBINARY",
+    "type": "ByteArray"
+  },
+  {
+    "action": "Eq",
+    "rule": "INTEGER",
+    "type": "Int"
+  },
+  {
+    "action": "Eq",
+    "rule": "TINYINT",
+    "type": "Byte"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "NUMERIC",
+    "type": "java.math.BigDecimal"
+  },
+  {
+    "action": "Eq",
+    "rule": "SMALLMONEY",
+    "type": "java.math.BigDecimal"
+  },
+  {
+    "action": "Eq",
+    "rule": "FLOAT",
+    "type": "Double"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DATETIME",
+    "type": "java.time.LocalDateTime"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "IMAGE",
+    "type": "ByteArray"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DECIMAL",
+    "type": "java.math.BigDecimal"
+  },
+  {
+    "action": "Regex",
+    "rule": "(.*)\\[\\]",
+    "type": "List<$1>"
+  },
+  {
+    "action": "Eq",
+    "rule": "BIGINT",
+    "type": "Long"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "BINARY",
+    "type": "ByteArray"
+  },
+  {
+    "action": "Eq",
+    "rule": "BOOLEAN",
+    "type": "Boolean"
+  },
+  {
+    "action": "Eq",
+    "rule": "uuid",
+    "type": "java.util.UUID"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DATE",
+    "type": "java.time.LocalDateTime"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "NVARCHAR",
+    "type": "String"
+  },
+  {
+    "action": "Eq",
+    "rule": "REAL",
+    "type": "Float"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "CHAR",
+    "type": "String"
+  },
+  {
+    "action": "Eq",
+    "rule": "MONEY",
+    "type": "java.math.BigDecimal"
+  },
+  {
+    "action": "Eq",
+    "rule": "BIT",
+    "type": "Boolean"
+  },
+  {
+    "action": "Eq",
+    "rule": "INT",
+    "type": "Int"
+  },
+  {
+    "action": "StartsWith",
+    "rule": "VARCHAR",
+    "type": "String"
+  }
+]

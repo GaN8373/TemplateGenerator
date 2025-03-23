@@ -3,22 +3,21 @@ package generator.data.table
 import com.intellij.database.model.DasColumn
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
-import com.intellij.database.psi.DbTable
 import generator.data.TypeMapper
+import generator.interfaces.IRawDas
 
-class TableData(val dbTable: DasTable, private val typeMapper: Collection<TypeMapper>) {
+@Suppress("unused")
+class TableData(private val rawDas: DasTable, private val typeMapper: Collection<TypeMapper>): IRawDas<DasTable> {
 
-    fun getRawName(): String {
-        return dbTable.name
+    override fun getRawDas(): DasTable {
+        return rawDas
+    }
+    fun getTypeMapper(): Collection<TypeMapper> {
+        return typeMapper
     }
 
     fun getParent(): DbStructData{
-       return DbStructData(dbTable.dasParent)
-    }
-
-
-    fun getRawComment(): String {
-        return dbTable.comment ?: ""
+       return DbStructData(rawDas.dasParent)
     }
 
     private var columns: List<ColumnData>? = null
@@ -28,7 +27,7 @@ class TableData(val dbTable: DasTable, private val typeMapper: Collection<TypeMa
         }
 
         val columns = ArrayList<ColumnData>()
-        dbTable.getDasChildren(ObjectKind.COLUMN).forEach {
+        rawDas.getDasChildren(ObjectKind.COLUMN).forEach {
             if (it is DasColumn) {
                 columns.add(ColumnData(it, typeMapper))
             }
@@ -36,7 +35,6 @@ class TableData(val dbTable: DasTable, private val typeMapper: Collection<TypeMa
         this.columns = columns
         return columns
     }
-
 
     fun getPrimaryColumns(): List<ColumnData> {
         return getColumns().filter { it.hasPrimaryKey() }

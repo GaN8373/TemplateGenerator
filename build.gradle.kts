@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "generator"
-version = "1.1.0-release"
+version = "1.2.0-snapshot"
 
 
 dependencies {

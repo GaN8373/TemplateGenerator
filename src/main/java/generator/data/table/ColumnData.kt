@@ -51,6 +51,9 @@ class ColumnData(
         return dasIndex.map { ColumnIndexData(datasource, it, this) }
     }
 
+    fun hasNotNull(): Boolean{
+        return getRawDas().isNotNull
+    }
 
     fun hasPrimaryKey(): Boolean {
         return DasUtil.hasAttribute(getRawDas(), DasColumn.Attribute.PRIMARY_KEY)

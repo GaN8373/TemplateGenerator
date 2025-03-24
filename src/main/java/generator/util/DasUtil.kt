@@ -8,9 +8,9 @@ import com.intellij.database.psi.DbTable
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.actionSystem.LangDataKeys
-import com.intellij.psi.PsiElement
 import java.util.*
 import java.util.stream.Stream
+
 
 /**
  * 兼容工具

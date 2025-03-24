@@ -2,6 +2,8 @@ package generator.ui.dialog;
 
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasTable;
+import com.intellij.database.model.ObjectKind;
+import com.intellij.database.psi.DbDataSource;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -18,10 +20,7 @@ import generator.interfaces.impl.GlobalStateService;
 import generator.ui.layout.DoubleColumnLayout;
 import generator.ui.layout.SingleColumnLayout;
 import generator.ui.components.ListCheckboxComponent;
-import generator.util.DasUtil;
-import generator.util.NameUtil;
-import generator.util.StaticUtil;
-import generator.util.TemplateUtil;
+import generator.util.*;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -195,6 +194,11 @@ public class GenerateConfigDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
+        if (scopeState.getSelectedTables().isEmpty()) {
+            Messages.showErrorDialog("Table is required", "Error");
+            return;
+        }
+
         var globalState = GlobalStateService.getInstance().getState();
 
         var fileNameMapTemplate = new HashMap<String, String>();
@@ -216,7 +220,12 @@ public class GenerateConfigDialog extends DialogWrapper {
             return;
         }
 
-        scopeState.getSelectedTables().parallelStream().map(x -> new TableData(x, mapperTemplates)).forEach(tableData -> {
+        var datasource = DbUtil.INSTANCE.getDatasource(DbUtil.INSTANCE.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().get());
+        if (datasource == null) {
+            Messages.showErrorDialog("Datasource is null, if some APIs are used, this may fail", "Error");
+        }
+
+        scopeState.getSelectedTables().parallelStream().map(x -> new TableData(datasource,x, mapperTemplates)).forEach(tableData -> {
             for (var entry : fileNameMapTemplate.entrySet()) {
                 try {
                     var root = new HashMap<String, Object>();

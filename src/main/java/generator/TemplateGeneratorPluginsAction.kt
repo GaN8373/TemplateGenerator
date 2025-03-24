@@ -8,7 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import generator.ui.dialog.GenerateConfigDialog
 import generator.util.DasUtil
 
-class TemplateGeneratorPluginsAction() : AnAction() {
+class TemplateGeneratorPluginsAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return super.getActionUpdateThread()

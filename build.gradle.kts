@@ -20,7 +20,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
 
     intellijPlatform {
-        rider("2024.3.6")
+        rider("2023.2")
         bundledPlugins("com.intellij.database")
     }
 }
@@ -35,7 +35,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("232.*")
+        sinceBuild.set("232")
         untilBuild.set("251.*")
     }
 

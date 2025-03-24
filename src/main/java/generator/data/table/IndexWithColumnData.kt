@@ -8,7 +8,7 @@ import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 
 @Suppress("unused")
-class ColumnIndexData(
+class IndexWithColumnData(
     private val datasource: DbDataSource?,
     private val rawDas: DasIndex,
     private val column: ColumnData

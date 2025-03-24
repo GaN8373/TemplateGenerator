@@ -46,15 +46,15 @@ class ColumnData(
      *
      * @return a list of ColumnIndexData objects created from the dasIndex elements
      */
-    fun getIndexList(): List<ColumnIndexData> {
-        return dasIndex.map { ColumnIndexData(datasource, it, this) }
+    fun getIndexList(): List<IndexWithColumnData> {
+        return dasIndex.map { IndexWithColumnData(datasource, it, this) }
     }
 
-    fun getForeignKey(): List<ForeignKeyData> {
+    fun getForeignKey(): List<ForeignKeyWithColumnData> {
         val dasParent = getRawDas().dasParent as DasTable
         return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
             .filter { it.columnsRef.names().contains(getRawDas().name) }
-            .map{ ForeignKeyData(datasource,it, this)}.toList()
+            .map{ ForeignKeyWithColumnData(datasource,it, this)}.toList()
     }
 
     fun hasNotNull(): Boolean {

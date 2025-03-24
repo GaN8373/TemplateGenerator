@@ -1,6 +1,5 @@
 package generator.interfaces
 
-import C.h.Da
 import com.intellij.database.model.DasObject
 import com.intellij.database.psi.DbDataSource
 

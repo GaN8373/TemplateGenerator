@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "generator"
-version = "1.2.0-snapshot"
+version = "1.3.0-snapshot"
 
 
 dependencies {
@@ -20,7 +20,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
 
     intellijPlatform {
-        rider("2023.2")
+        rider("2024.3.6")
         bundledPlugins("com.intellij.database")
     }
 }

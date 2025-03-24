@@ -2,7 +2,6 @@ package generator.data.table
 
 import com.intellij.database.model.*
 import com.intellij.database.psi.DbDataSource
-import com.intellij.openapi.util.NlsSafe
 import generator.data.TypeMapper
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
@@ -51,7 +50,14 @@ class ColumnData(
         return dasIndex.map { ColumnIndexData(datasource, it, this) }
     }
 
-    fun hasNotNull(): Boolean{
+    fun getForeignKey(): List<ForeignKeyData> {
+        val dasParent = getRawDas().dasParent as DasTable
+        return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
+            .filter { it.columnsRef.names().contains(getRawDas().name) }
+            .map{ ForeignKeyData(datasource,it, this)}.toList()
+    }
+
+    fun hasNotNull(): Boolean {
         return getRawDas().isNotNull
     }
 

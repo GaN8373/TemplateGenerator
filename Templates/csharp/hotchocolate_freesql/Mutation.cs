@@ -43,7 +43,7 @@ public static class Mutation${PascalCaseName}
     /// </summary>
     /// <param name="context">auto injected</param>
     <#list primarys as column >
-    /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment}</param>
+    /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment()}</param>
         </#list>
     /// <returns></returns> 
     public static async Task<${PascalCaseName}> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)

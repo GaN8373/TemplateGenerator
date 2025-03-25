@@ -2,11 +2,12 @@ package generator.interfaces.impl
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.*
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import generator.config.GlobalState
 import generator.data.TypeMapper
 import generator.util.StaticUtil
-import java.util.LinkedHashSet
 
 
 @State(
@@ -35,13 +36,6 @@ class GlobalStateService : PersistentStateComponent<GlobalState?> {
     }
 
     override fun loadState(state: GlobalState) {
-        if (state.historyUsePath.size > 10) {
-            val elements = state.historyUsePath.stream().skip((state.historyUsePath.size - 10).toLong()).toList()
-
-            state.historyUsePath.clear();
-            state.historyUsePath.addAll(elements)
-        }
-
         this.globalState = state
     }
 

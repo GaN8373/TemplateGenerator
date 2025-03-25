@@ -2,8 +2,6 @@ package generator.ui.dialog;
 
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasTable;
-import com.intellij.database.model.ObjectKind;
-import com.intellij.database.psi.DbDataSource;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -15,22 +13,29 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import generator.config.ScopeState;
+import generator.data.ScoredMember;
 import generator.data.table.TableData;
+import generator.interfaces.IHistorySelectedDelegate;
 import generator.interfaces.impl.GlobalStateService;
+import generator.interfaces.impl.HistoryStateService;
+import generator.ui.components.ListCheckboxComponent;
+import generator.ui.components.SelectionHistoryComboBox;
 import generator.ui.layout.DoubleColumnLayout;
 import generator.ui.layout.SingleColumnLayout;
-import generator.ui.components.ListCheckboxComponent;
 import generator.util.*;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,25 +70,99 @@ public class GenerateConfigDialog extends DialogWrapper {
         return contentPane;
     }
 
-    private void refreshTemplateGroupSelect() {
-        templateGroupSelected.setEditable(true);
-
-        templateGroupSelected.removeAllItems();
+    @Override
+    protected void doOKAction() {
+        if (scopeState.getSelectedTables().isEmpty()) {
+            Messages.showErrorDialog("Table is required", "Error");
+            return;
+        }
 
         var globalState = GlobalStateService.getInstance().getState();
 
-        for (String input : globalState.getHistoryUsePath()) {
-            templateGroupSelected.insertItemAt(input, 0);
+        var fileNameMapTemplate = new HashMap<String, String>();
+        try {
+            for (var path : scopeState.getSelectedTemplatePath()) {
+                var strings = Files.readString(path);
+                if (strings.length() > TemplateUtil.SPLIT_TAG.length() + 1) {
+                    var fileName = path.getFileName().toString().split("\\.")[0];
+
+                    fileNameMapTemplate.put(fileName, strings);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        var mapperTemplates = globalState.getTemplates(scopeState.getSelectTypeMapping());
+        if (mapperTemplates.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "TypeMapper is not empty", "Message！", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        var datasource = DbUtil.INSTANCE.getDatasource(DbUtil.INSTANCE.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().orElseThrow());
+        if (datasource == null) {
+            Messages.showErrorDialog("Datasource is null, if some APIs are used, this may fail", "Error");
+        }
+
+        scopeState.getSelectedTables().parallelStream().map(x -> new TableData(datasource, x, mapperTemplates)).forEach(tableData -> {
+            for (var entry : fileNameMapTemplate.entrySet()) {
+                try {
+                    var root = new HashMap<String, Object>();
+                    root.put("table", tableData);
+                    root.put("columns", tableData.getColumns());
+                    root.put("NameUtil", NameUtil.INSTANCE);
+                    root.put("namespace", namespaceTextField.getText());
+
+                    String sourceCode;
+                    try (var bo = new ByteArrayOutputStream()) {
+                        TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8), entry.getKey(), entry.getValue());
+                        sourceCode = bo.toString(StandardCharsets.UTF_8);
+                    }
+
+                    var extracted = TemplateUtil.extractConfig(TemplateUtil.SPLIT_TAG_REGEX, sourceCode);
+                    var templateConfig = extracted.component1();
+                    sourceCode = extracted.component2();
+
+                    var outPath = Path.of(scopeState.getPath(),
+                            StringUtil.isEmpty(templateConfig.getDir()) ? "Temp" : templateConfig.getDir(),
+                            StringUtil.isEmpty(templateConfig.getFileName()) ? entry.getKey() : templateConfig.getFileName());
+
+                    var file = outPath.toFile();
+                    if (!file.exists()) {
+                       var ignore = file.getParentFile().mkdirs();
+
+                        if (!file.createNewFile()) {
+                            StaticUtil.showWarningNotification("Create File", "Can not create file", project, NotificationType.WARNING);
+                            return;
+                        }
+                    }
+
+                    try (var writer = new OutputStreamWriter(new FileOutputStream(outPath.toString()), StandardCharsets.UTF_8)) {
+                        writer.write(sourceCode);
+                        writer.flush();
+                    }
+                    StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
+
+                } catch (Exception e) {
+                    Messages.showErrorDialog(e.getMessage(), "Error");
+
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        super.doOKAction();
+    }
+
+    private void refreshTemplateGroupSelect() {
+        templateGroupSelected.removeAllItems();
+
+        var globalHistoryState = HistoryStateService.getInstance().getState();
+
+        globalHistoryState.getHistoryUsePath().stream().sorted().forEachOrdered(input -> templateGroupSelected.insertItemAt(input.getMember(), 0));
+
         if (templateGroupSelected.getItemCount() > 0) {
             templateGroupSelected.setSelectedIndex(0);
         }
-    }
-
-    private void initTypeMappingSelect() {
-        var globalState = GlobalStateService.getInstance().getState();
-
-        globalState.getGroupMapTemplate().forEach((k, v) -> typeMappingSelected.addItem(k));
     }
 
     private void refreshGenerateTemplatePanel() {
@@ -93,29 +172,24 @@ public class GenerateConfigDialog extends DialogWrapper {
             return;
         }
 
-        var globalState = GlobalStateService.getInstance().getState();
-
+        var globalHistoryState = HistoryStateService.getInstance().getState();
         var dir = Path.of(templatePath);
         var file = dir.toFile();
         if (!file.exists()) {
-            templateGroupSelected.removeItem(templatePath);
-            globalState.getHistoryUsePath().remove(templatePath);
+            globalHistoryState.getHistoryUsePath().remove(new ScoredMember<>(templatePath));
             return;
         }
 
         try (var templateGroup = Files.list(dir)) {
             if (!templatePath.isBlank()) {
-                if (!globalState.getHistoryUsePath().contains(templatePath)) {
-                    templateGroupSelected.insertItemAt(templatePath, 0);
-                }
-                globalState.getHistoryUsePath().add(templatePath);
+                globalHistoryState.getHistoryUsePath().add(new ScoredMember<>(templatePath));
             }
 
             var paths = new HashMap<String, Path>();
 
-            var collect = templateGroup.peek(x -> paths.put(x.getFileName().toString(), x)).map(x -> x.getFileName().toString()).collect(Collectors.toList());
+            var fileNames = templateGroup.peek(x -> paths.put(x.getFileName().toString(), x)).map(x -> x.getFileName().toString()).collect(Collectors.toList());
 
-            var tables = new ListCheckboxComponent(new DoubleColumnLayout(), collect);
+            var tables = new ListCheckboxComponent(new DoubleColumnLayout(), fileNames);
 
             for (var actionListener : selectAllButton.getActionListeners()) {
                 selectAllButton.removeActionListener(actionListener);
@@ -127,9 +201,9 @@ public class GenerateConfigDialog extends DialogWrapper {
             }
             clearSelectAllButton.addActionListener(e -> Objects.requireNonNull(tables.getCheckBoxList()).forEach(x -> x.setSelected(false)));
             generateTemplatePanel.setViewportView(tables);
-            scopeState.setTemplateFilePath(paths, tables);
 
-            Objects.requireNonNull(scopeState.getTemplateGroup()).setSelectedItem(templatePath);
+            scopeState.setTemplateFilePath(paths, tables);
+//            Objects.requireNonNull(scopeState.getTemplateGroup()).setSelectedItem(templatePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -165,7 +239,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             return i == 0 ? b.getName().compareTo(a.getName()) : i;
         }).map(DasNamed::getName).toList());
 
-        tables.getCheckBoxList().forEach(x -> {
+        Objects.requireNonNull(tables.getCheckBoxList()).forEach(x -> {
             if (selectTables.contains(x.getText())) {
                 x.setSelected(true);
             }
@@ -192,91 +266,63 @@ public class GenerateConfigDialog extends DialogWrapper {
 
     }
 
-    @Override
-    protected void doOKAction() {
-        if (scopeState.getSelectedTables().isEmpty()) {
-            Messages.showErrorDialog("Table is required", "Error");
-            return;
-        }
+    private void createUIComponents() {
+        templateGroupSelected = new SelectionHistoryComboBox(new IHistorySelectedDelegate<>() {
 
-        var globalState = GlobalStateService.getInstance().getState();
-
-        var fileNameMapTemplate = new HashMap<String, String>();
-        try {
-            for (var path : scopeState.getSelectedTemplatePath()) {
-                var strings = Files.readString(path);
-                if (strings.length() > TemplateUtil.SPLIT_TAG.length() + 1) {
-                    var fileName = path.getFileName().toString().split("\\.")[0];
-
-                    fileNameMapTemplate.put(fileName, strings);
+            @Override
+            public void selectItem(String item) {
+                var instance = HistoryStateService.getInstance();
+                var state = instance.getState();
+                for (var member : state.getHistoryUsePath()) {
+                    if (member.getMember().equals(item)) {
+                        member.setScore(System.currentTimeMillis());
+                        instance.loadState(state);
+                        break;
+                    }
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        var mapperTemplates = globalState.getTemplates(scopeState.getSelectTypeMapping());
-        if (mapperTemplates.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "TypeMapper is not empty", "Message！", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
 
-        var datasource = DbUtil.INSTANCE.getDatasource(DbUtil.INSTANCE.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().get());
-        if (datasource == null) {
-            Messages.showErrorDialog("Datasource is null, if some APIs are used, this may fail", "Error");
-        }
+            @Override
+            public @Nullable String getSelectItem() {
+                var state = HistoryStateService.getInstance().getState();
+                return state.getHistoryUsePath().stream()
+                        .max(Comparator.comparingLong(ScoredMember::getScore))
+                        .map(ScoredMember::getMember)
+                        .orElse(null);
+            }
 
-        scopeState.getSelectedTables().parallelStream().map(x -> new TableData(datasource,x, mapperTemplates)).forEach(tableData -> {
-            for (var entry : fileNameMapTemplate.entrySet()) {
-                try {
-                    var root = new HashMap<String, Object>();
-                    root.put("table", tableData);
-                    root.put("columns", tableData.getColumns());
-                    root.put("NameUtil", NameUtil.INSTANCE);
-                    root.put("namespace", namespaceTextField.getText());
-
-                    String sourceCode;
-                    try (var bo = new ByteArrayOutputStream()) {
-                        TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8), entry.getKey(), entry.getValue());
-                        sourceCode = bo.toString(StandardCharsets.UTF_8);
-                    }
-
-                    var extracted = TemplateUtil.extractConfig(TemplateUtil.SPLIT_TAG_REGEX, sourceCode);
-                    var templateConfig = extracted.component1();
-                    sourceCode = extracted.component2();
-
-                    var outPath = Path.of(scopeState.getPath(),
-                            StringUtil.isEmpty(templateConfig.getDir()) ? "Temp" : templateConfig.getDir(),
-                            StringUtil.isEmpty(templateConfig.getFileName()) ? entry.getKey() : templateConfig.getFileName());
-
-                    var file = outPath.toFile();
-                    if (!file.exists()) {
-                        file.getParentFile().mkdirs();
-
-                        if (!file.createNewFile()) {
-                            StaticUtil.showWarningNotification("Create File", "Can not create file", project, NotificationType.WARNING);
-                            return;
-                        }
-                    }
-
-                    try (var writer = new OutputStreamWriter(new FileOutputStream(outPath.toString()), StandardCharsets.UTF_8)) {
-                        writer.write(sourceCode);
-                        writer.flush();
-                    }
-                    StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
-
-                } catch (Exception e) {
-                    Messages.showErrorDialog(e.getMessage(), "Error");
-
-                    throw new RuntimeException(e);
-                }
+            @Override
+            public @NotNull Collection<String> getSelectedList() {
+                var state = HistoryStateService.getInstance().getState();
+                return state.getHistoryUsePath().stream().map(ScoredMember::getMember).toList();
             }
         });
+        templateGroupSelected.setEditable(true);
+        templateGroupSelected.addItemListener(e-> refreshGenerateTemplatePanel());
+        typeMappingSelected = new SelectionHistoryComboBox(new IHistorySelectedDelegate<>() {
+            @Override
+            public void selectItem(String item) {
+                var state = HistoryStateService.getInstance().getState();
+                state.setHistoryUseTypeMapper(item);
+            }
 
-        super.doOKAction();
+            @Override
+            public @NotNull Collection<String> getSelectedList() {
+                var globalState = GlobalStateService.getInstance().getState();
+                return globalState.getGroupMapTemplate().keySet();
+            }
+
+            @Override
+            public @Nullable String getSelectItem() {
+                var state = HistoryStateService.getInstance().getState();
+                return state.getHistoryUseTypeMapper();
+            }
+        });
     }
 
     public GenerateConfigDialog(AnActionEvent event) {
         super(event.getProject());
+
         this.event = event;
         this.project = event.getProject();
         scopeState = new ScopeState(project, pathInput, templateGroupSelected, typeMappingSelected);
@@ -292,9 +338,8 @@ public class GenerateConfigDialog extends DialogWrapper {
         };
         chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
 
-        templateGroupSelected.addActionListener(e -> refreshGenerateTemplatePanel());
         templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
-        pathInput.setText(project.getBasePath());
+        pathInput.setText(Objects.requireNonNull(project).getBasePath());
         namespaceTextField.setText(project.getName());
         namespaceTextField.addFocusListener(new FocusListener() {
             @Override
@@ -348,8 +393,6 @@ public class GenerateConfigDialog extends DialogWrapper {
         refreshTemplateGroupSelect();
 
         initDatabaseTreeState();
-
-        initTypeMappingSelect();
 
         refreshButton.addActionListener(e -> refreshGenerateTemplatePanel());
 

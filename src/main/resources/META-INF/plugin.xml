@@ -28,6 +28,7 @@
         />
 
         <applicationService serviceImplementation="generator.interfaces.impl.GlobalStateService"/>
+        <applicationService serviceImplementation="generator.interfaces.impl.HistoryStateService"/>
     </extensions>
 
     <actions>

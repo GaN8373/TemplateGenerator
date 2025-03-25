@@ -50,7 +50,7 @@ class ColumnData(
         return dasIndex.map { IndexWithColumnData(datasource, it, this) }
     }
 
-    fun getForeignKey(): List<ForeignKeyWithColumnData> {
+    fun getForeignKeyList(): List<ForeignKeyWithColumnData> {
         val dasParent = getRawDas().dasParent as DasTable
         return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
             .filter { it.columnsRef.names().contains(getRawDas().name) }

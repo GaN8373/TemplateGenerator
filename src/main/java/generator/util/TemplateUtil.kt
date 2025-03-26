@@ -1,6 +1,5 @@
 package generator.util
 
-import com.intellij.database.model.DasColumn
 import com.intellij.openapi.util.text.StringUtil
 import freemarker.template.Configuration
 import freemarker.template.Template
@@ -89,22 +88,22 @@ object TemplateUtil {
 
 
     @JvmStatic
-    fun convertType(dbColumn: DasColumn, typeMappers: Collection<TypeMapper>): String? {
+    fun convertType(v: String, typeMappers: Collection<TypeMapper>): String? {
         for (typeMapper in typeMappers) {
-            val columnNameLowercase = DasUtil.getDataType(dbColumn).toString().lowercase()
+            val valueLowercase = v.lowercase()
             if (typeMapper.action == MapperAction.Regex
                 && typeMapper.type.contains("$1")
-                && typeMapper.action.match.match(typeMapper.rule, columnNameLowercase)
+                && typeMapper.action.match.match(typeMapper.rule, valueLowercase)
             ) {
                 return replaceWithRegexGroups(
                     typeMappers,
                     typeMapper.rule.lowercase(),
-                    columnNameLowercase,
+                    valueLowercase,
                     typeMapper.type
                 )
             }
 
-            if (typeMapper.action.match.match(typeMapper.rule.lowercase(), columnNameLowercase)) {
+            if (typeMapper.action.match.match(typeMapper.rule.lowercase(), valueLowercase)) {
                 return typeMapper.type
             }
         }

@@ -23,13 +23,17 @@ class ColumnData(
         return datasource
     }
 
+    fun transformTo(v: String): String {
+        return TemplateUtil.convertType(v, typeMappers) ?: v
+    }
+
     /**
      * 获取映射类型。若转换失败则返回"unknown"
      *
      * @return the mapped type string or "unknown" if conversion fails
      */
     fun getMapperType(): String {
-        return TemplateUtil.convertType(rawDas, typeMappers) ?: "unknown"
+        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappers) ?: "unknown"
     }
 
     /**

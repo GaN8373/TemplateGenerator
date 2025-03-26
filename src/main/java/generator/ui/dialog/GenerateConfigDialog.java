@@ -187,7 +187,10 @@ public class GenerateConfigDialog extends DialogWrapper {
 
             var paths = new HashMap<String, Path>();
 
-            var fileNames = templateGroup.peek(x -> paths.put(x.getFileName().toString(), x)).map(x -> x.getFileName().toString()).collect(Collectors.toList());
+            var fileNames = templateGroup.filter(x-> x.toFile().isFile())
+                    .peek(x -> paths.put(x.getFileName().toString(), x))
+                    .map(x -> x.getFileName().toString())
+                    .collect(Collectors.toList());
 
             var tables = new ListCheckboxComponent(new DoubleColumnLayout(), fileNames);
 

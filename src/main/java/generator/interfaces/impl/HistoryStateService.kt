@@ -21,7 +21,7 @@ class HistoryStateService : PersistentStateComponent<GlobalHistoryState?> {
 
     override fun loadState(state: GlobalHistoryState) {
         if (state.historyUsePath.size > 10) {
-            val v = HashSet<ScoredMember<String>>()
+            val v = HashSet<ScoredMember>()
             state.historyUsePath.stream().limit(10).forEach { v.add(it) }
             state.historyUsePath = v
         }

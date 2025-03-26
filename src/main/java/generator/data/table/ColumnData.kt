@@ -33,6 +33,14 @@ class ColumnData(
     }
 
     /**
+     * 获取原始默认值字符串。
+     * @return the raw default value string
+     */
+    fun getRawDefaultValue(): String {
+        return rawDas.default ?: ""
+    }
+
+    /**
      * 获取原始数据类型字符串。
      *
      * @return the raw data type string

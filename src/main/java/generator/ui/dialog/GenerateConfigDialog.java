@@ -176,13 +176,13 @@ public class GenerateConfigDialog extends DialogWrapper {
         var dir = Path.of(templatePath);
         var file = dir.toFile();
         if (!file.exists()) {
-            globalHistoryState.getHistoryUsePath().remove(new ScoredMember<>(templatePath));
+            globalHistoryState.getHistoryUsePath().remove(new ScoredMember(templatePath));
             return;
         }
 
         try (var templateGroup = Files.list(dir)) {
             if (!templatePath.isBlank()) {
-                globalHistoryState.getHistoryUsePath().add(new ScoredMember<>(templatePath));
+                globalHistoryState.getHistoryUsePath().add(new ScoredMember(templatePath));
             }
 
             var paths = new HashMap<String, Path>();
@@ -289,6 +289,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             public @Nullable String getSelectItem() {
                 var state = HistoryStateService.getInstance().getState();
                 return state.getHistoryUsePath().stream()
+                        .peek(x-> {if (x.getScore() == null) x.setScore(0L);})
                         .max(Comparator.comparingLong(ScoredMember::getScore))
                         .map(ScoredMember::getMember)
                         .orElse(null);
@@ -297,7 +298,10 @@ public class GenerateConfigDialog extends DialogWrapper {
             @Override
             public @NotNull Collection<String> getSelectedList() {
                 var state = HistoryStateService.getInstance().getState();
-                return state.getHistoryUsePath().stream().map(ScoredMember::getMember).toList();
+                return state.getHistoryUsePath().stream()
+                        .filter(x-> x.getMember() != null)
+                        .map(x -> String.valueOf(x.getMember()))
+                        .toList();
             }
         });
         templateGroupSelected.setEditable(true);

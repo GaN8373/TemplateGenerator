@@ -1,20 +1,20 @@
 package generator.data
 
-class ScoredMember<T> : Comparable<ScoredMember<Any>> {
+class ScoredMember : Comparable<ScoredMember> {
 
     var score: Long? = null
-    var member: T? = null
+    var member: String? = null
 
-    constructor(score: Long, member: T) {
+    constructor(score: Long, member: String) {
         this.score = score
         this.member = member
     }
 
-    constructor(member: T) : this(System.currentTimeMillis(), member)
+    constructor(member: String) : this(System.currentTimeMillis(), member)
     @Deprecated(message = "Framework internal use only", level = DeprecationLevel.ERROR)
     constructor()
 
-    override fun compareTo(other: ScoredMember<Any>): Int {
+    override fun compareTo(other: ScoredMember): Int {
         return score?.compareTo(other.score ?: 0) ?: 0
     }
 
@@ -22,7 +22,7 @@ class ScoredMember<T> : Comparable<ScoredMember<Any>> {
         if (this.member === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ScoredMember<*>
+        other as ScoredMember
 
         return this.member.toString() == other.member.toString()
     }

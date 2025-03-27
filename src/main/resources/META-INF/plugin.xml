@@ -19,10 +19,21 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.database</depends>
 
+    <resource-bundle>locale.i18n</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+         <applicationConfigurable id="gan8373.generator.settings.group"
+                           displayName="TemplateGeneratorSettings"/>
+        <groupConfigurable displayNameKey="TemplateGeneratorSettings" id="gan8373.generator.settings.group"
+                           descriptionKey="TemplateGeneratorSettingsDesc"/>
+
         <applicationConfigurable instance="generator.ui.view.TypeMapperSettingView"
-                                 displayName="TemplateGeneratorSettings"/>
+                                 groupId="gan8373.generator.settings.group"
+                                 displayName="TypeMappingSetting"/>
+
+        <applicationConfigurable instance="generator.ui.view.DatabaseMapperSettingView"
+                                 groupId="gan8373.generator.settings.group"
+                                 displayName="DatabaseMappingSetting"/>
         <notificationGroup id="TemplateGeneratorNotification"
                            displayType="BALLOON"
         />

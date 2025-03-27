@@ -1,11 +1,12 @@
 package generator.config
 
-import generator.data.TypeMapper
+import generator.data.TypeMappingUnit
 
 class GlobalState {
-    var groupMapTemplate: MutableMap<String, Collection<TypeMapper>> = HashMap()
+    var typeMappingGroupMap: MutableMap<String, Collection<TypeMappingUnit>> = HashMap()
+    var databaseMappingGroupMap: MutableMap<String, Collection<TypeMappingUnit>> = HashMap()
 
-    fun getTemplates(templateGroup: String?): Set<TypeMapper> {
-        return groupMapTemplate[templateGroup]?.toSet() ?: emptySet()
+    fun getTemplates(templateGroup: String?): Set<TypeMappingUnit> {
+        return typeMappingGroupMap[templateGroup]?.toSet() ?: emptySet()
     }
 }

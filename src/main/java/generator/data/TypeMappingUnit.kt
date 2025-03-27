@@ -3,7 +3,7 @@ package generator.data
 import com.fasterxml.jackson.annotation.JsonAlias
 import generator.MapperAction
 
-class TypeMapper : Comparable<TypeMapper> {
+class TypeMappingUnit : Comparable<TypeMappingUnit> {
     @JsonAlias("action", "Action")
     var action: MapperAction = MapperAction.Eq
     @JsonAlias("rule", "Rule")
@@ -20,7 +20,7 @@ class TypeMapper : Comparable<TypeMapper> {
 
     constructor()
 
-    override fun compareTo(other: TypeMapper): Int {
+    override fun compareTo(other: TypeMappingUnit): Int {
         val compareTo = action.ordinal - other.action.ordinal
 
         if (compareTo != 0) {

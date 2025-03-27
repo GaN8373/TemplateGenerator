@@ -6,7 +6,7 @@ import freemarker.template.Template
 import generator.MapperAction
 import generator.config.TemplateConfig
 import generator.config.TemplateConfig.Companion.fromProperties
-import generator.data.TypeMapper
+import generator.data.TypeMappingUnit
 import java.io.Writer
 import java.util.regex.Pattern
 
@@ -29,7 +29,7 @@ object TemplateUtil {
 
 
     private fun replaceWithRegexGroups(
-        typeMappers: Collection<TypeMapper>,
+        typeMappingUnits: Collection<TypeMappingUnit>,
         regexPattern: String,
         inputText: String,
         replacementTemplate: String
@@ -42,7 +42,7 @@ object TemplateUtil {
             for (i in 1..matcher.groupCount()) {
                 var groupValue = matcher.group(i)
                 if (groupValue != null) {
-                    for (typeMapper in typeMappers) {
+                    for (typeMapper in typeMappingUnits) {
                         if (typeMapper.action.match.match(typeMapper.rule, groupValue!!)) {
                             groupValue = typeMapper.type
                             break
@@ -88,15 +88,15 @@ object TemplateUtil {
 
 
     @JvmStatic
-    fun convertType(v: String, typeMappers: Collection<TypeMapper>): String? {
-        for (typeMapper in typeMappers) {
+    fun convertType(v: String, typeMappingUnits: Collection<TypeMappingUnit>): String? {
+        for (typeMapper in typeMappingUnits) {
             val valueLowercase = v.lowercase()
             if (typeMapper.action == MapperAction.Regex
                 && typeMapper.type.contains("$1")
                 && typeMapper.action.match.match(typeMapper.rule, valueLowercase)
             ) {
                 return replaceWithRegexGroups(
-                    typeMappers,
+                    typeMappingUnits,
                     typeMapper.rule.lowercase(),
                     valueLowercase,
                     typeMapper.type

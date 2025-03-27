@@ -2,7 +2,7 @@ package generator.data.table
 
 import com.intellij.database.model.*
 import com.intellij.database.psi.DbDataSource
-import generator.data.TypeMapper
+import generator.data.TypeMappingUnit
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 import generator.util.DasUtil
@@ -12,7 +12,7 @@ import generator.util.TemplateUtil
 class ColumnData(
     private val datasource: DbDataSource?,
     private val rawDas: DasColumn,
-    val typeMappers: Collection<TypeMapper>
+    val typeMappingUnits: Collection<TypeMappingUnit>
 ) : IRawDas<DasColumn>, IRawDb {
 
     override fun getRawDas(): DasColumn {
@@ -23,8 +23,8 @@ class ColumnData(
         return datasource
     }
 
-    fun transformTo(v: String): String {
-        return TemplateUtil.convertType(v, typeMappers) ?: v
+    fun transformTo(v: String): String? {
+        return TemplateUtil.convertType(v, typeMappingUnits)
     }
 
     /**
@@ -32,8 +32,8 @@ class ColumnData(
      *
      * @return the mapped type string or "unknown" if conversion fails
      */
-    fun getMapperType(): String {
-        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappers) ?: "unknown"
+    fun getMapperType(): String? {
+        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappingUnits)
     }
 
     /**

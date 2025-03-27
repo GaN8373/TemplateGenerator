@@ -4,7 +4,7 @@ import com.intellij.database.model.DasColumn
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbDataSource
-import generator.data.TypeMapper
+import generator.data.TypeMappingUnit
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 
@@ -12,7 +12,7 @@ import generator.interfaces.IRawDb
 class TableData(
     private val datasource: DbDataSource?,
     private val rawDas: DasTable,
-    private val typeMapper: Collection<TypeMapper>
+    private val typeMappingUnit: Collection<TypeMappingUnit>
 ) : IRawDas<DasTable>, IRawDb {
     override fun getDatasource(): DbDataSource? {
         return datasource
@@ -22,8 +22,8 @@ class TableData(
         return rawDas
     }
 
-    fun getTypeMapper(): Collection<TypeMapper> {
-        return typeMapper
+    fun getTypeMapper(): Collection<TypeMappingUnit> {
+        return typeMappingUnit
     }
 
     /**
@@ -51,7 +51,7 @@ class TableData(
         val columns = ArrayList<ColumnData>()
         rawDas.getDasChildren(ObjectKind.COLUMN).forEach {
             if (it is DasColumn) {
-                columns.add(ColumnData(datasource, it, typeMapper))
+                columns.add(ColumnData(datasource, it, typeMappingUnit))
             }
         }
         this.columns = columns

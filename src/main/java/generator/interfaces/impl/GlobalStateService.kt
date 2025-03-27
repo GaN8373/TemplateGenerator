@@ -6,7 +6,7 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import generator.config.GlobalState
-import generator.data.TypeMapper
+import generator.data.TypeMappingUnit
 import generator.util.StaticUtil
 
 
@@ -18,17 +18,24 @@ class GlobalStateService : PersistentStateComponent<GlobalState?> {
     private var globalState = GlobalState()
 
     override fun getState(): GlobalState {
-        if (globalState.groupMapTemplate.isEmpty()) {
+        if (globalState.typeMappingGroupMap.isEmpty()) {
             val objectMapper = StaticUtil.JSON
 
-            val groupMapTemplate = globalState.groupMapTemplate
+            val groupMapTemplate = globalState.typeMappingGroupMap
 
             val classLoader = GlobalStateService::class.java.classLoader
             classLoader.getResourceAsStream("TypeMapper/CSharpMapper.json").use { inputStream ->
                 val typeReference =
-                    object : TypeReference<MutableSet<TypeMapper>>() {}
+                    object : TypeReference<MutableSet<TypeMappingUnit>>() {}
                 val readValue = objectMapper.readValue(inputStream, typeReference)
                 groupMapTemplate["DefaultCSharp"] = readValue
+            }
+
+            classLoader.getResourceAsStream("TypeMapper/db_pg_mapper.json").use { inputStream ->
+                val typeReference =
+                    object : TypeReference<MutableSet<TypeMappingUnit>>() {}
+                val readValue = objectMapper.readValue(inputStream, typeReference)
+                globalState.databaseMappingGroupMap["db_pg_mapper"] = readValue
             }
         }
 

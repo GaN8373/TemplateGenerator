@@ -3,7 +3,7 @@ package generator.data
 import generator.MapperAction
 import javax.swing.table.DefaultTableModel
 
-class TableRowData(@JvmField var data: List<TypeMapper>) : DefaultTableModel(COLUMN_NAMES, 0) {
+class TableRowData(@JvmField var data: List<TypeMappingUnit>) : DefaultTableModel(COLUMN_NAMES, 0) {
     init {
         for (it in data) {
             addRow(arrayOf<Any>(it.action.name, it.rule, it.type))

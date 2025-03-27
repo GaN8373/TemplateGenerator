@@ -34,7 +34,7 @@ class ForeignKeyWithColumnData(
         return rawDas.columnsRef.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }
             .filter { it.name != column.getRawDas().name }
-            .map { ColumnData(datasource, it, column.typeMappers) }
+            .map { ColumnData(datasource, it, column.typeMappingUnits) }
             .toList()
     }
 

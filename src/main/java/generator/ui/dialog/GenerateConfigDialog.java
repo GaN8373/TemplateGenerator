@@ -316,7 +316,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             @Override
             public @NotNull Collection<String> getSelectedList() {
                 var globalState = GlobalStateService.getInstance().getState();
-                return globalState.getGroupMapTemplate().keySet();
+                return globalState.getTypeMappingGroupMap().keySet();
             }
 
             @Override

@@ -97,13 +97,13 @@ object TemplateUtil {
             ) {
                 return replaceWithRegexGroups(
                     typeMappingUnits,
-                    typeMapper.rule.lowercase(),
+                    typeMapper.rule,
                     valueLowercase,
                     typeMapper.type
                 )
             }
 
-            if (typeMapper.action.match.match(typeMapper.rule.lowercase(), valueLowercase)) {
+            if (typeMapper.action.match.match(typeMapper.rule, valueLowercase)) {
                 return typeMapper.type
             }
         }

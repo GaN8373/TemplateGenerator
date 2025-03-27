@@ -6,7 +6,7 @@ import javax.swing.JComboBox
 
 class SelectionHistoryComboBox(private val delegate: IHistorySelectedDelegate<String>) : JComboBox<String>() {
     init {
-        delegate.getSelectedList().forEach { addItem(it) }
+        delegate.getSelectList().forEach { addItem(it) }
         initLastSelectedItem()
         this.addItemListener {
             val toString = it.item.toString()

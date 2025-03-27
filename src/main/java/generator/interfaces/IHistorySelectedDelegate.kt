@@ -1,7 +1,7 @@
 package generator.interfaces
 
 interface IHistorySelectedDelegate<T> {
-    fun getSelectedList(): Collection<T>
+    fun getSelectList(): Collection<T>
 
     fun getSelectItem(): T?
 

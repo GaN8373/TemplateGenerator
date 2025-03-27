@@ -1,7 +1,0 @@
-[
-  {
-    "Action": "Regex",
-    "Rule": "(.*)\\[\\]",
-    "Type": "IEnumerable<$1>"
-  }
-]

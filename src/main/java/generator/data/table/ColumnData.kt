@@ -23,7 +23,7 @@ class ColumnData(
         return datasource
     }
 
-    fun transformTo(v: String): String? {
+    fun tryTransformTo(v: String): String? {
         return TemplateUtil.convertType(v, typeMappingUnits)
     }
 
@@ -32,7 +32,11 @@ class ColumnData(
      *
      * @return the mapped type string or "unknown" if conversion fails
      */
-    fun getMapperType(): String? {
+    fun getMapperType(): String {
+        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappingUnits) ?: "unknown"
+    }
+
+    fun tryMapValue(): String?{
         return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappingUnits)
     }
 

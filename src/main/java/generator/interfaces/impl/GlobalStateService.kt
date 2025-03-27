@@ -18,27 +18,17 @@ class GlobalStateService : PersistentStateComponent<GlobalState?> {
     private var globalState = GlobalState()
 
     override fun getState(): GlobalState {
+        val classLoader = GlobalStateService::class.java.classLoader
+        val objectMapper = StaticUtil.JSON
+
         if (globalState.typeMappingGroupMap.isEmpty()) {
-            val objectMapper = StaticUtil.JSON
-
-            val groupMapTemplate = globalState.typeMappingGroupMap
-
-            val classLoader = GlobalStateService::class.java.classLoader
-            classLoader.getResourceAsStream("TypeMapper/CSharpMapper.json").use { inputStream ->
+            classLoader.getResourceAsStream("TypeMapper/$DEFAULT_TYPE_GROUP.json").use { inputStream ->
                 val typeReference =
                     object : TypeReference<MutableSet<TypeMappingUnit>>() {}
                 val readValue = objectMapper.readValue(inputStream, typeReference)
-                groupMapTemplate["DefaultCSharp"] = readValue
-            }
-
-            classLoader.getResourceAsStream("TypeMapper/db_pg_mapper.json").use { inputStream ->
-                val typeReference =
-                    object : TypeReference<MutableSet<TypeMappingUnit>>() {}
-                val readValue = objectMapper.readValue(inputStream, typeReference)
-                globalState.databaseMappingGroupMap["db_pg_mapper"] = readValue
+                globalState.typeMappingGroupMap[DEFAULT_TYPE_GROUP] = readValue
             }
         }
-
         return globalState
     }
 
@@ -47,6 +37,8 @@ class GlobalStateService : PersistentStateComponent<GlobalState?> {
     }
 
     companion object {
+        const val DEFAULT_TYPE_GROUP = "DefaultCSharp"
+
         @JvmStatic
         fun getInstance(): GlobalStateService {
             return ApplicationManager.getApplication().getService(GlobalStateService::class.java)

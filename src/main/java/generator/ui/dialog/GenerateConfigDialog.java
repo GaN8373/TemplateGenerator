@@ -92,13 +92,13 @@ public class GenerateConfigDialog extends DialogWrapper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        var mapperTemplates = globalState.getTemplates(scopeState.getSelectTypeMapping());
+        var mapperTemplates = globalState.getTypeMappingGroupMap().getOrDefault(scopeState.getSelectTypeMapping(), Set.of());
         if (mapperTemplates.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "TypeMapper is not empty", "Message！", JOptionPane.WARNING_MESSAGE);
+            Messages.showErrorDialog("TypeMapper is empty", "Error");
             return;
         }
 
-        var datasource = DbUtil.INSTANCE.getDatasource(DbUtil.INSTANCE.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().orElseThrow());
+        var datasource = DbUtil.getDatasource(DbUtil.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().orElseThrow());
         if (datasource == null) {
             Messages.showErrorDialog("Datasource is null, if some APIs are used, this may fail", "Error");
         }
@@ -111,6 +111,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                     root.put("columns", tableData.getColumns());
                     root.put("NameUtil", NameUtil.INSTANCE);
                     root.put("namespace", namespaceTextField.getText());
+                    root.put("dbms", datasource.getDbms());
 
                     String sourceCode;
                     try (var bo = new ByteArrayOutputStream()) {
@@ -296,7 +297,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             }
 
             @Override
-            public @NotNull Collection<String> getSelectedList() {
+            public @NotNull Collection<String> getSelectList() {
                 var state = HistoryStateService.getInstance().getState();
                 return state.getHistoryUsePath().stream()
                         .filter(x-> x.getMember() != null)
@@ -314,7 +315,7 @@ public class GenerateConfigDialog extends DialogWrapper {
             }
 
             @Override
-            public @NotNull Collection<String> getSelectedList() {
+            public @NotNull Collection<String> getSelectList() {
                 var globalState = GlobalStateService.getInstance().getState();
                 return globalState.getTypeMappingGroupMap().keySet();
             }

@@ -31,9 +31,6 @@
                                  groupId="gan8373.generator.settings.group"
                                  displayName="TypeMappingSetting"/>
 
-        <applicationConfigurable instance="generator.ui.view.DatabaseMapperSettingView"
-                                 groupId="gan8373.generator.settings.group"
-                                 displayName="DatabaseMappingSetting"/>
         <notificationGroup id="TemplateGeneratorNotification"
                            displayType="BALLOON"
         />

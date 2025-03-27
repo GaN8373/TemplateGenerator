@@ -5,6 +5,11 @@
     "Type": "IEnumerable<$1>"
   },
   {
+    "Action": "Regex",
+    "Rule": "postgres[\\s\\S]*using gin[\\s\\S]*",
+    "Type": "// test index access method"
+  },
+  {
     "Action": "StartsWith",
     "Rule": "VARCHAR",
     "Type": "string"

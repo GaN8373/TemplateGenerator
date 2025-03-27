@@ -12,6 +12,8 @@ ${table.getRawStatement()}
 
     #region index
     <#list column.getIndexList() as indexData>
+        <#assign matchName = dbms.getName() + indexData.getRawStatement()>
+        ${MapperUtil.tryTransformTo(matchName) ! "// fail"}
         ${indexData.getRawStatement()}
     </#list>
     #endregion

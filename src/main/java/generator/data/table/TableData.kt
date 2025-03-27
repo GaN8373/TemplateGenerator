@@ -1,6 +1,7 @@
 package generator.data.table
 
 import com.intellij.database.model.DasColumn
+import com.intellij.database.model.DasIndex
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbDataSource
@@ -12,7 +13,7 @@ import generator.interfaces.IRawDb
 class TableData(
     private val datasource: DbDataSource?,
     private val rawDas: DasTable,
-    private val typeMappingUnit: Collection<TypeMappingUnit>
+    private val typeMappingUnits: Collection<TypeMappingUnit>
 ) : IRawDas<DasTable>, IRawDb {
     override fun getDatasource(): DbDataSource? {
         return datasource
@@ -23,7 +24,7 @@ class TableData(
     }
 
     fun getTypeMapper(): Collection<TypeMappingUnit> {
-        return typeMappingUnit
+        return typeMappingUnits
     }
 
     /**
@@ -38,6 +39,16 @@ class TableData(
 
     private var columns: List<ColumnData>? = null
 
+    fun getIndexList(): List<IndexData> {
+        val indexList = ArrayList<IndexData>()
+        rawDas.getDasChildren(ObjectKind.INDEX).forEach {
+            if (it is DasIndex) {
+                indexList.add(IndexData(datasource, it, typeMappingUnits))
+            }
+        }
+        return indexList
+    }
+
     /**
      * 获取该表所有列。
      *
@@ -51,7 +62,7 @@ class TableData(
         val columns = ArrayList<ColumnData>()
         rawDas.getDasChildren(ObjectKind.COLUMN).forEach {
             if (it is DasColumn) {
-                columns.add(ColumnData(datasource, it, typeMappingUnit))
+                columns.add(ColumnData(datasource, it, typeMappingUnits))
             }
         }
         this.columns = columns

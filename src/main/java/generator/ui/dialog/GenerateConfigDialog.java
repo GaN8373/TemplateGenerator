@@ -92,7 +92,7 @@ public class GenerateConfigDialog extends DialogWrapper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        var mapperTemplates = globalState.getTypeMappingGroupMap().getOrDefault(scopeState.getSelectTypeMapping(), Set.of());
+        var mapperTemplates = globalState.getTypeMappingGroupMap().getOrDefault(scopeState.getSelectTypeMapping(), Set.of()).stream().sorted().toList();
         if (mapperTemplates.isEmpty()) {
             Messages.showErrorDialog("TypeMapper is empty", "Error");
             return;
@@ -103,6 +103,8 @@ public class GenerateConfigDialog extends DialogWrapper {
             Messages.showErrorDialog("Datasource is null, if some APIs are used, this may fail", "Error");
         }
 
+        var mapperUtil = new MapperUtil(mapperTemplates);
+
         scopeState.getSelectedTables().parallelStream().map(x -> new TableData(datasource, x, mapperTemplates)).forEach(tableData -> {
             for (var entry : fileNameMapTemplate.entrySet()) {
                 try {
@@ -112,6 +114,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                     root.put("NameUtil", NameUtil.INSTANCE);
                     root.put("namespace", namespaceTextField.getText());
                     root.put("dbms", datasource.getDbms());
+                    root.put("MapperUtil", mapperUtil);
 
                     String sourceCode;
                     try (var bo = new ByteArrayOutputStream()) {

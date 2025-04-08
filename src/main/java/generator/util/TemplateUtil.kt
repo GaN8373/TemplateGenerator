@@ -91,19 +91,25 @@ object TemplateUtil {
     fun convertType(v: String, typeMappingUnits: Collection<TypeMappingUnit>): String? {
         for (typeMapper in typeMappingUnits) {
             val valueLowercase = v.lowercase()
+            var rule = typeMapper.rule
+
             if (typeMapper.action == MapperAction.Regex
                 && typeMapper.type.contains("$1")
-                && typeMapper.action.match.match(typeMapper.rule, valueLowercase)
+                && typeMapper.action.match.match(rule, valueLowercase)
             ) {
                 return replaceWithRegexGroups(
                     typeMappingUnits,
-                    typeMapper.rule,
+                    rule,
                     valueLowercase,
                     typeMapper.type
                 )
             }
 
-            if (typeMapper.action.match.match(typeMapper.rule, valueLowercase)) {
+            if (typeMapper.action != MapperAction.Regex) {
+                rule = rule.lowercase()
+            }
+
+            if (typeMapper.action.match.match(rule, valueLowercase)) {
                 return typeMapper.type
             }
         }

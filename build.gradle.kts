@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "generator"
-version = "2.0.0-release"
+version = "2.0.1-release"
 
 
 dependencies {
@@ -35,7 +35,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("232")
+        sinceBuild.set("223")
         untilBuild.set("251.*")
     }
 

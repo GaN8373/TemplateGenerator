@@ -20,7 +20,7 @@ public static class Mutation${PascalCaseName}
     /// <param name="context">auto injected</param>
     /// <param name="input">add param</param>
     /// <returns></returns>
-    public static async Task<${PascalCaseName}> Add${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
+    public static async Task<${PascalCaseName}?> Add${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
         var result = await context.Insert(input).ExecuteInsertedAsync();
         return result.FirstOrDefault();
@@ -32,7 +32,7 @@ public static class Mutation${PascalCaseName}
     /// <param name="context">auto injected</param>
     /// <param name="input">update param</param>
     /// <returns></returns>
-    public static async Task<${PascalCaseName}> Update${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
+    public static async Task<${PascalCaseName}?> Update${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
         var result = await context.Update<${PascalCaseName}>().SetSource(input).ExecuteUpdatedAsync();
         return result.FirstOrDefault();
@@ -46,7 +46,7 @@ public static class Mutation${PascalCaseName}
     /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment()}</param>
         </#list>
     /// <returns></returns> 
-    public static async Task<${PascalCaseName}> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
+    public static async Task<${PascalCaseName}?> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
     {
         var result = await context.Delete<${PascalCaseName}>()
         <#list primarys as column >

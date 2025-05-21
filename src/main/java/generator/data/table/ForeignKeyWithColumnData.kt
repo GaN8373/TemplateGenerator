@@ -31,9 +31,8 @@ class ForeignKeyWithColumnData(
      * @return the information of other columns as a specific object
      */
     fun getOtherColumn(): List<ColumnData> {
-        return rawDas.columnsRef.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
+        return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }
-            .filter { it.name != column.getRawDas().name }
             .map { ColumnData(datasource, it, column.typeMappingUnits) }
             .toList()
     }

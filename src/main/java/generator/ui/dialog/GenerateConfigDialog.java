@@ -152,8 +152,8 @@ public class GenerateConfigDialog extends DialogWrapper {
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw); // 将堆栈信息打印到PrintWriter
-            String fullStackTrace = sw.toString(); // 获取完整的堆栈信息字符串
+            e.printStackTrace(pw);
+            String fullStackTrace = sw.toString();
             Messages.showErrorDialog(e.getMessage() + "\n" + fullStackTrace, "Error");
         }
     }

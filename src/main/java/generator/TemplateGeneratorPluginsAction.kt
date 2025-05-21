@@ -39,8 +39,8 @@ class TemplateGeneratorPluginsAction : AnAction() {
         } catch (e: Exception) {
             val sw = StringWriter()
             val pw = PrintWriter(sw)
-            e.printStackTrace(pw) // 将堆栈信息打印到PrintWriter
-            val fullStackTrace = sw.toString() // 获取完整的堆栈信息字符串
+            e.printStackTrace(pw)
+            val fullStackTrace = sw.toString()
 
             Messages.showErrorDialog(e.message + "\n" + fullStackTrace, "Error")
         }

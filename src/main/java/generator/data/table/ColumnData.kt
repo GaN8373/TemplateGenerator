@@ -27,6 +27,10 @@ class ColumnData(
         return TemplateUtil.convertType(v, typeMappingUnits)
     }
 
+    fun getParent(): TableData {
+        return TableData(datasource, rawDas.dasParent as DasTable, typeMappingUnits)
+    }
+
     /**
      * 获取映射类型。若转换失败则返回"unknown"
      *

@@ -3,7 +3,7 @@
 <#assign DbStructData=table.getParent()>
 #region config
 fileName=Query${PascalCaseName}.cs
-dir=QueryEndpoint
+dir=Endpoint
 #endregion
 
 using HotChocolate.Resolvers;

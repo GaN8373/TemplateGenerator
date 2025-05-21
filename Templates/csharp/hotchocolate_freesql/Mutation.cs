@@ -4,7 +4,7 @@
 <#assign DbStructData=table.getParent()>
 #region config
 fileName=Mutation${PascalCaseName}.cs
-dir=MutationEndpoint
+dir=Endpoint
 #endregion
 
 using HotChocolate.Resolvers;

@@ -21,6 +21,7 @@ class ForeignKeyWithColumnData(
         return rawDas
     }
 
+    @Deprecated("Unclear meaning")
     private fun getColumn(): ColumnData {
         return column
     }

@@ -21,6 +21,7 @@ ${table.getRawStatement()}
         // -----tryTransformTo---------
     </#list>
 
+    // getForeignKeyList
     <#list column.getForeignKeyList() as foreignKey>
         foreignKey: ${foreignKey.getRawName()}
 
@@ -31,5 +32,20 @@ ${table.getRawStatement()}
             table: ${oc.getParent().getRawName()}
         </#list>
     </#list>
+    // ---------getForeignKeyList----------
+
+    // getInverseForeignKeys
+    <#list column.getInverseForeignKeys() as foreignKey>
+        foreignKey: ${foreignKey.getRawName()}
+
+        <#list foreignKey.getColumns() as oc>
+            name: ${oc.getRawName()}
+            unique: ${oc.hasUnique()?c}
+            primary: ${oc.hasPrimaryKey()?c}
+            table: ${oc.getParent().getRawName()}
+            columnTable: ${oc.getParent().getRawName()}
+        </#list>
+    </#list>
+    // ---------getInverseForeignKeys----------
 </#list>
 #endregion

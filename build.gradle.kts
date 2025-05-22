@@ -1,3 +1,5 @@
+import com.jetbrains.plugin.structure.base.problems.MAX_CHANGE_NOTES_LENGTH
+
 repositories {
     mavenCentral()
     intellijPlatform {
@@ -25,6 +27,7 @@ dependencies {
         // debug version
 //        rider("2024.3.6")
         bundledPlugins("com.intellij.database")
+
     }
 }
 
@@ -40,6 +43,8 @@ tasks {
     patchPluginXml {
         sinceBuild.set("223")
         untilBuild.set("252.*")
+        val changelog =file("CHANGELOG.md").readText()
+        changeNotes.set(changelog.substring(0, minOf(MAX_CHANGE_NOTES_LENGTH, changelog.length)))
     }
 
     signPlugin {

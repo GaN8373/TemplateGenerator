@@ -21,8 +21,22 @@ class ForeignKeyWithColumnData(
         return rawDas
     }
 
-    fun getColumn(): ColumnData {
+    private fun getColumn(): ColumnData {
         return column
+    }
+
+    fun getColumns(): List<ColumnData>{
+        return rawDas.columnsRef.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
+            .map { it as DasColumn }
+            .map { ColumnData(datasource, it, column.typeMappingUnits) }
+            .toList()
+    }
+
+    fun getInverseColumns(): List<ColumnData> {
+        return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
+            .map { it as DasColumn }
+            .map { ColumnData(datasource, it, column.typeMappingUnits) }
+            .toList()
     }
 
     /**
@@ -30,6 +44,7 @@ class ForeignKeyWithColumnData(
      *
      * @return the information of other columns as a specific object
      */
+    @Deprecated("Unclear meaning")
     fun getOtherColumn(): List<ColumnData> {
         return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }

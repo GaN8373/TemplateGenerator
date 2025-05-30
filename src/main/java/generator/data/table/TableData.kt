@@ -34,7 +34,7 @@ class TableData(
      * @return the parent structure data as a DbStructData object
      */
     fun getParent(): DbStructData {
-        return DbStructData(rawDas.dasParent)
+        return DbStructData(datasource,rawDas.dasParent,typeMappingUnits)
     }
 
     private var columns: List<ColumnData>? = null

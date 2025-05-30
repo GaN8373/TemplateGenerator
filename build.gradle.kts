@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "generator"
-version = "2.1.0-release"
+version = "3.0.0-release"
 
 
 dependencies {
@@ -23,9 +23,9 @@ dependencies {
 
     intellijPlatform {
         // build version
-        rider("2023.2")
+//        rider("2023.2")
         // debug version
-//        rider("2024.3.6")
+        rider("2024.3.6")
         bundledPlugins("com.intellij.database")
 
     }

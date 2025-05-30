@@ -2,7 +2,7 @@ package generator.data.table
 
 import com.intellij.database.model.*
 import com.intellij.database.psi.DbDataSource
-import generator.data.TypeMappingUnit
+import generator.data.GenerateContext
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 import generator.util.DasUtil
@@ -11,9 +11,8 @@ import java.util.stream.Stream
 
 @Suppress("unused")
 class ColumnData(
-    private val datasource: DbDataSource?,
     private val rawDas: DasColumn,
-    val typeMappingUnits: Collection<TypeMappingUnit>
+    private val context: GenerateContext
 ) : IRawDas<DasColumn>, IRawDb {
 
     override fun getRawDas(): DasColumn {
@@ -21,15 +20,15 @@ class ColumnData(
     }
 
     override fun getDatasource(): DbDataSource? {
-        return datasource
+        return context.datasource
     }
 
     fun tryTransformTo(v: String): String? {
-        return TemplateUtil.convertType(v, typeMappingUnits)
+        return TemplateUtil.convertType(v, context.typeMappingUnits)
     }
 
     fun getParent(): TableData {
-        return TableData(datasource, rawDas.dasParent as DasTable, typeMappingUnits)
+        return TableData(rawDas.dasParent as DasTable, context)
     }
 
     /**
@@ -38,11 +37,11 @@ class ColumnData(
      * @return the mapped type string or "unknown" if conversion fails
      */
     fun getMapperType(): String {
-        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappingUnits) ?: "unknown"
+        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), context.typeMappingUnits) ?: "unknown"
     }
 
     fun tryMapValue(): String? {
-        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), typeMappingUnits)
+        return TemplateUtil.convertType(DasUtil.getDataType(rawDas), context.typeMappingUnits)
     }
 
     /**
@@ -68,7 +67,7 @@ class ColumnData(
      * @return a list of ColumnIndexData objects created from the dasIndex elements
      */
     fun getIndexList(): List<IndexWithColumnData> {
-        return dasIndex.map { IndexWithColumnData(datasource, it, this) }
+        return dasIndex.map { IndexWithColumnData( it, context,this) }
     }
 
     fun getForeignKeyList(): List<ForeignKeyWithColumnData> {
@@ -79,13 +78,13 @@ class ColumnData(
         val dasParent = getRawDas().dasParent as DasTable
         return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
             .filter { it.columnsRef.names().contains(getRawDas().name) }
-            .map { ForeignKeyWithColumnData(datasource, it, this) }.toList()
+            .map { ForeignKeyWithColumnData(it, context) }.toList()
     }
 
     fun getInverseForeignKeys(): List<ForeignKeyWithColumnData> {
-        var parent = getParent().getRawDas().dasParent ?: return emptyList()
+        val parent = getParent().getRawDas().dasParent ?: return emptyList()
 
-        var list: Stream<DasForeignKey>? = null;
+        var list: Stream<DasForeignKey>? = null
         if (parent.kind == ObjectKind.SCHEMA) {
             val dasParent = parent.dasParent
             list = dasParent!!.getDasChildren(ObjectKind.SCHEMA)
@@ -101,7 +100,7 @@ class ColumnData(
         }
 
         return list.filter { it.columnsRef.names().contains(getRawDas().name) }
-            .map { ForeignKeyWithColumnData(datasource, it, this) }.toList()
+            .map { ForeignKeyWithColumnData(it, context) }.toList()
     }
 
 

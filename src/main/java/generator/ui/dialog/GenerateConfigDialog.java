@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import generator.config.ScopeState;
+import generator.data.GenerateContext;
 import generator.data.ScoredMember;
 import generator.data.table.TableData;
 import generator.interfaces.IHistorySelectedDelegate;
@@ -97,8 +98,9 @@ public class GenerateConfigDialog extends DialogWrapper {
             var datasource = DbUtil.getDatasource(DbUtil.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().orElseThrow());
 
             var mapperUtil = new MapperUtil(mapperTemplates);
+            var generateContext = new GenerateContext(mapperTemplates, datasource);
 
-            scopeState.getSelectedTables().parallelStream().map(x -> new TableData(datasource, x, mapperTemplates)).forEach(tableData -> {
+            scopeState.getSelectedTables().parallelStream().map(x -> new TableData( x, generateContext)).forEach(tableData -> {
                 for (var entry : fileNameMapTemplate.entrySet()) {
                     try {
                         var root = new HashMap<String, Object>();

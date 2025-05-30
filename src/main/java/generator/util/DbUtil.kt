@@ -18,7 +18,7 @@ object DbUtil {
     }
 
     @JvmStatic
-    fun getDatasource(db: Stream<DbDataSource>, das: DasObject): DbDataSource? {
+    fun getDatasource(db: Stream<DbDataSource>, das: DasObject): DbDataSource {
         return db.filter{it.findElement(das) != null}.findFirst()
             .orElseThrow { Exception("das can not convert to db abstract. dbname is empty, das  is ${das.name}") }
     }

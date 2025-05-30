@@ -5,18 +5,19 @@ import com.intellij.database.model.DasIndex
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbDataSource
+import generator.data.GenerateContext
 import generator.data.TypeMappingUnit
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 
 @Suppress("unused")
 class TableData(
-    private val datasource: DbDataSource?,
+
     private val rawDas: DasTable,
-    private val typeMappingUnits: Collection<TypeMappingUnit>
+    private val context: GenerateContext
 ) : IRawDas<DasTable>, IRawDb {
-    override fun getDatasource(): DbDataSource? {
-        return datasource
+    override fun getDatasource(): DbDataSource {
+        return context.datasource
     }
 
     override fun getRawDas(): DasTable {
@@ -24,7 +25,7 @@ class TableData(
     }
 
     fun getTypeMapper(): Collection<TypeMappingUnit> {
-        return typeMappingUnits
+        return context.typeMappingUnits
     }
 
     /**
@@ -34,7 +35,7 @@ class TableData(
      * @return the parent structure data as a DbStructData object
      */
     fun getParent(): DbStructData {
-        return DbStructData(datasource,rawDas.dasParent,typeMappingUnits)
+        return DbStructData(rawDas.dasParent,context)
     }
 
     private var columns: List<ColumnData>? = null
@@ -43,7 +44,7 @@ class TableData(
         val indexList = ArrayList<IndexData>()
         rawDas.getDasChildren(ObjectKind.INDEX).forEach {
             if (it is DasIndex) {
-                indexList.add(IndexData(datasource, it, typeMappingUnits))
+                indexList.add(IndexData( it, context))
             }
         }
         return indexList
@@ -62,7 +63,7 @@ class TableData(
         val columns = ArrayList<ColumnData>()
         rawDas.getDasChildren(ObjectKind.COLUMN).forEach {
             if (it is DasColumn) {
-                columns.add(ColumnData(datasource, it, typeMappingUnits))
+                columns.add(ColumnData( it, context))
             }
         }
         this.columns = columns

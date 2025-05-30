@@ -4,39 +4,34 @@ import com.intellij.database.model.DasColumn
 import com.intellij.database.model.DasForeignKey
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbDataSource
+import generator.data.GenerateContext
 import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 
 @Suppress("unused")
 class ForeignKeyWithColumnData(
-    private val datasource: DbDataSource?,
     private val rawDas: DasForeignKey,
-    private val column: ColumnData
+    private val context: GenerateContext
 ) : IRawDas<DasForeignKey>, IRawDb {
-    override fun getDatasource(): DbDataSource? {
-        return datasource
+    override fun getDatasource(): DbDataSource {
+        return context.datasource
     }
 
     override fun getRawDas(): DasForeignKey {
         return rawDas
     }
 
-    @Deprecated("Unclear meaning")
-    private fun getColumn(): ColumnData {
-        return column
-    }
-
     fun getColumns(): List<ColumnData>{
         return rawDas.columnsRef.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }
-            .map { ColumnData(datasource, it, column.typeMappingUnits) }
+            .map { ColumnData(it, context) }
             .toList()
     }
 
     fun getInverseColumns(): List<ColumnData> {
         return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }
-            .map { ColumnData(datasource, it, column.typeMappingUnits) }
+            .map { ColumnData(it, context) }
             .toList()
     }
 
@@ -49,7 +44,7 @@ class ForeignKeyWithColumnData(
     fun getOtherColumn(): List<ColumnData> {
         return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
             .map { it as DasColumn }
-            .map { ColumnData(datasource, it, column.typeMappingUnits) }
+            .map { ColumnData(it, context) }
             .toList()
     }
 

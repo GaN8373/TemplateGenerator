@@ -18,7 +18,7 @@ using FreeSql.DataAnnotations;
                 /// </summary>
             <#if ForeignColumn.hasUnique() || ForeignColumn.hasPrimaryKey()>
                 [Navigate(nameof(${ColumnName}))]
-                public ${FcType} ${(ColumnNameFindIdIndex<1)?then(FcType,ColumnName?substring(0,ColumnNameFindIdIndex))}  {get;set;}
+                public ${FcType}? ${(ColumnNameFindIdIndex<1)?then(FcType,ColumnName?substring(0,ColumnNameFindIdIndex))}  {get;set;}
 
             <#else>
                 [Navigate(ManyToMany=typeof(${FcType}))]

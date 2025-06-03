@@ -78,4 +78,31 @@ class TableData(
     fun getPrimaryColumns(): List<ColumnData> {
         return getColumns().filter { it.hasPrimaryKey() }
     }
+
+    fun getForeignKeys(): List<ForeignKeyData> {
+        return getRawDas().getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
+            .map { ForeignKeyData(it, context) }.toList()
+    }
+
+    fun getInverseForeignKeys(): List<ForeignKeyData> {
+        val fullTable = getParent().getFullTable()
+        val fullName = getParent().getRawName() + getRawName()
+        return fullTable.filter {
+            it.getParent().getRawName() + it.getRawName() != fullName
+        }.flatMap { it.getForeignKeys() }
+            .filter {
+                it.getInverseColumns().any {
+                    val parent = it.getParent()
+                    parent.getParent().getRawName() + parent.getRawName() == fullName
+                }
+            }
+    }
+
+    fun hasView(): Boolean {
+        return rawDas.kind == ObjectKind.VIEW
+    }
+
+    fun hasTable(): Boolean {
+        return rawDas.kind == ObjectKind.TABLE
+    }
 }

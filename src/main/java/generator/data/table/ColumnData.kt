@@ -70,18 +70,18 @@ class ColumnData(
         return dasIndex.map { IndexWithColumnData( it, context,this) }
     }
 
-    fun getForeignKeyList(): List<ForeignKeyWithColumnData> {
+    fun getForeignKeyList(): List<ForeignKeyData> {
         return getForeignKeys()
     }
 
-    fun getForeignKeys(): List<ForeignKeyWithColumnData> {
+    fun getForeignKeys(): List<ForeignKeyData> {
         val dasParent = getRawDas().dasParent as DasTable
         return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }
             .filter { it.columnsRef.names().contains(getRawDas().name) }
-            .map { ForeignKeyWithColumnData(it, context) }.toList()
+            .map { ForeignKeyData(it, context) }.toList()
     }
 
-    fun getInverseForeignKeys(): List<ForeignKeyWithColumnData> {
+    fun getInverseForeignKeys(): List<ForeignKeyData> {
         val parent = getParent().getRawDas().dasParent ?: return emptyList()
 
         var list: Stream<DasForeignKey>? = null
@@ -100,7 +100,7 @@ class ColumnData(
         }
 
         return list.filter { it.columnsRef.names().contains(getRawDas().name) }
-            .map { ForeignKeyWithColumnData(it, context) }.toList()
+            .map { ForeignKeyData(it, context) }.toList()
     }
 
 

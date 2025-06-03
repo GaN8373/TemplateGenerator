@@ -9,7 +9,7 @@ import generator.interfaces.IRawDas
 import generator.interfaces.IRawDb
 
 @Suppress("unused")
-class ForeignKeyWithColumnData(
+class ForeignKeyData(
     private val rawDas: DasForeignKey,
     private val context: GenerateContext
 ) : IRawDas<DasForeignKey>, IRawDb {

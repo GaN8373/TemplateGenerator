@@ -99,6 +99,7 @@ public class GenerateConfigDialog extends DialogWrapper {
 
             var mapperUtil = new MapperUtil(mapperTemplates);
             var generateContext = new GenerateContext(mapperTemplates, datasource);
+            var fullSelectTables = scopeState.getSelectedTables().stream().map(x-> new TableData(x,  generateContext)).toList();
 
             scopeState.getSelectedTables().parallelStream().map(x -> new TableData( x, generateContext)).forEach(tableData -> {
                 for (var entry : fileNameMapTemplate.entrySet()) {
@@ -110,6 +111,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                         root.put("namespace", namespaceTextField.getText());
                         root.put("dbms", datasource.getDbms());
                         root.put("MapperUtil", mapperUtil);
+                        root.put("selectedTables", fullSelectTables);
 
                         String sourceCode;
                         try (var bo = new ByteArrayOutputStream()) {

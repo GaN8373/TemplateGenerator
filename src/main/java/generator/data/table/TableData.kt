@@ -1,9 +1,6 @@
 package generator.data.table
 
-import com.intellij.database.model.DasColumn
-import com.intellij.database.model.DasIndex
-import com.intellij.database.model.DasTable
-import com.intellij.database.model.ObjectKind
+import com.intellij.database.model.*
 import com.intellij.database.psi.DbDataSource
 import generator.data.GenerateContext
 import generator.data.TypeMappingUnit
@@ -35,7 +32,7 @@ class TableData(
      * @return the parent structure data as a DbStructData object
      */
     fun getParent(): DbStructData {
-        return DbStructData(rawDas.dasParent,context)
+        return DbStructData(rawDas.dasParent, context)
     }
 
     private var columns: List<ColumnData>? = null
@@ -44,7 +41,7 @@ class TableData(
         val indexList = ArrayList<IndexData>()
         rawDas.getDasChildren(ObjectKind.INDEX).forEach {
             if (it is DasIndex) {
-                indexList.add(IndexData( it, context))
+                indexList.add(IndexData(it, context))
             }
         }
         return indexList
@@ -63,7 +60,7 @@ class TableData(
         val columns = ArrayList<ColumnData>()
         rawDas.getDasChildren(ObjectKind.COLUMN).forEach {
             if (it is DasColumn) {
-                columns.add(ColumnData( it, context))
+                columns.add(ColumnData(it, context))
             }
         }
         this.columns = columns

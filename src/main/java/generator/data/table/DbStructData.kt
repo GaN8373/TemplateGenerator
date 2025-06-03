@@ -23,7 +23,7 @@ class DbStructData(
         return das?.kind == ObjectKind.DATABASE
     }
 
-    fun getDatabaseFullTable(): List<TableData> {
+    fun getFullTable(): List<TableData> {
         var db = das
         if (hasSchema() && db?.dasParent?.kind == ObjectKind.DATABASE) {
             db = das?.dasParent

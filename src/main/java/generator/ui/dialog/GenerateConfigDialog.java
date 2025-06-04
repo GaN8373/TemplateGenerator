@@ -12,9 +12,11 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import freemarker.core.StopException;
 import generator.config.ScopeState;
 import generator.data.GenerateContext;
 import generator.data.ScoredMember;
+import generator.data.TemplateContextWrapper;
 import generator.data.table.TableData;
 import generator.interfaces.IHistorySelectedDelegate;
 import generator.interfaces.impl.GlobalStateService;
@@ -95,33 +97,41 @@ public class GenerateConfigDialog extends DialogWrapper {
                 return;
             }
 
+            // build context
             var datasource = DbUtil.getDatasource(DbUtil.getAllDatasource(project), scopeState.getSelectedTables().stream().findFirst().orElseThrow());
 
             var mapperUtil = new MapperUtil(mapperTemplates);
-            var generateContext = new GenerateContext(mapperTemplates, datasource);
-            var fullSelectTables = scopeState.getSelectedTables().stream().map(x-> new TableData(x,  generateContext)).toList();
+            var dbContext = new GenerateContext(mapperTemplates, datasource);
 
-            scopeState.getSelectedTables().parallelStream().map(x -> new TableData( x, generateContext)).forEach(tableData -> {
-                for (var entry : fileNameMapTemplate.entrySet()) {
+            var fullSelectTables = scopeState.getSelectedTables().stream().map(x-> new TableData(x,  dbContext)).toList();
+            var templateSharedContext = new TemplateContextWrapper();
+
+            // process template
+            scopeState.getSelectedTables().stream().map(x -> new TableData( x, dbContext)).forEach(tableData -> {
+                fileNameMapTemplate.entrySet().stream().sorted((Map.Entry.comparingByKey())).forEachOrdered(entry -> {
                     try {
-                        var root = new HashMap<String, Object>();
-                        root.put("table", tableData);
-                        root.put("columns", tableData.getColumns());
-                        root.put("NameUtil", NameUtil.INSTANCE);
-                        root.put("namespace", namespaceTextField.getText());
-                        root.put("dbms", datasource.getDbms());
-                        root.put("MapperUtil", mapperUtil);
-                        root.put("selectedTables", fullSelectTables);
+                        // region process template context
+                        var context = new HashMap<String, Object>();
+                        context.put("context", templateSharedContext);
+                        context.put("namespace", namespaceTextField.getText());
+                        context.put("dbms", datasource.getDbms());
+                        context.put("selectedTables", fullSelectTables);
+                        context.put("table", tableData);
+                        context.put("columns", tableData.getColumns());
+                        context.put("NameUtil", NameUtil.INSTANCE);
+                        context.put("MapperUtil", mapperUtil);
 
                         String sourceCode;
                         try (var bo = new ByteArrayOutputStream()) {
-                            TemplateUtil.evaluate(root, new OutputStreamWriter(bo, StandardCharsets.UTF_8), entry.getKey(), entry.getValue());
+                            TemplateUtil.evaluate(context, new OutputStreamWriter(bo, StandardCharsets.UTF_8), entry.getKey(), entry.getValue());
                             sourceCode = bo.toString(StandardCharsets.UTF_8);
                         }
 
                         var extracted = TemplateUtil.extractConfig(TemplateUtil.SPLIT_TAG_REGEX, sourceCode);
                         var templateConfig = extracted.component1();
                         sourceCode = extracted.component2();
+
+                        // endregion
 
                         var outPath = Path.of(scopeState.getPath(),
                                 StringUtil.isEmpty(templateConfig.getDir()) ? "Temp" : templateConfig.getDir(),
@@ -141,14 +151,15 @@ public class GenerateConfigDialog extends DialogWrapper {
                             writer.write(sourceCode);
                             writer.flush();
                         }
+
                         StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Generate Success", project, NotificationType.INFORMATION);
 
+                    } catch (StopException _ignore) {
+//                        StaticUtil.showWarningNotification("Template Generate", entry.getKey() + " Stop process", project, NotificationType.WARNING);
                     } catch (Exception e) {
-                        Messages.showErrorDialog(e.getMessage(), "Error");
-
-                        throw new RuntimeException(e);
+                        Messages.showErrorDialog("Template: "+entry.getKey() + "\n" + e.getMessage(), "Error");
                     }
-                }
+                });
             });
 
             super.doOKAction();

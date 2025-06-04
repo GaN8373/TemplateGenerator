@@ -3,6 +3,7 @@ package generator.util
 import com.intellij.openapi.util.text.StringUtil
 import freemarker.template.Configuration
 import freemarker.template.Template
+import freemarker.template.TemplateException
 import generator.MapperAction
 import generator.config.TemplateConfig
 import generator.config.TemplateConfig.Companion.fromProperties
@@ -20,6 +21,7 @@ object TemplateUtil {
 
 
     @JvmStatic
+    @Throws(TemplateException::class)
     fun evaluate(context: Map<String, Any>, writer: Writer, templateName: String, template: String): Boolean {
         val engine = Template(templateName, template, cfg)
 

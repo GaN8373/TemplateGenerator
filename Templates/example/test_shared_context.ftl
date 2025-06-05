@@ -1,3 +1,4 @@
+// singleton file generate
 <#if context.containsKey("BaseEntity")>
     <#stop>
 </#if>

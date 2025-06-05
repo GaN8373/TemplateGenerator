@@ -35,17 +35,4 @@ class ForeignKeyData(
             .toList()
     }
 
-    /**
-     * 获取其他列的相关信息。
-     *
-     * @return the information of other columns as a specific object
-     */
-    @Deprecated("Unclear meaning")
-    fun getOtherColumn(): List<ColumnData> {
-        return rawDas.refColumns.resolveObjects().filter { it.kind == ObjectKind.COLUMN }
-            .map { it as DasColumn }
-            .map { ColumnData(it, context) }
-            .toList()
-    }
-
 }

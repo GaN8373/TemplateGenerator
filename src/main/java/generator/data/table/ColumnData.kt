@@ -70,10 +70,6 @@ class ColumnData(
         return dasIndex.map { IndexWithColumnData( it, context,this) }
     }
 
-    fun getForeignKeyList(): List<ForeignKeyData> {
-        return getForeignKeys()
-    }
-
     fun getForeignKeys(): List<ForeignKeyData> {
         val dasParent = getRawDas().dasParent as DasTable
         return dasParent.getDasChildren(ObjectKind.FOREIGN_KEY).map { it as DasForeignKey }

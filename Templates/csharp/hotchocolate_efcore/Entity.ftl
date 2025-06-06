@@ -1,8 +1,10 @@
 <#assign DbStructData=table.getParent()>
+<#assign DbPascalName = NameUtil.toPascalCase(DbStructData.getRawName())>
+
 <#assign TablePascalName=NameUtil.toPascalCase(table.getRawName())>
 #region config
 fileName=${TablePascalName}.cs
-dir=Entities
+dir=${DbPascalName}/Entities
 #endregion
 <#---->
 using System.ComponentModel.DataAnnotations;
@@ -12,13 +14,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// ${table.getRawComment()}
 /// </summary>
 [Table("${table.getRawName()}" ${DbStructData.hasSchema()?then(', Schema = "${DbStructData.getRawName()}"','')})]
+[PrimaryKey(<#list table.getPrimaryColumns() as column >nameof(${NameUtil.toPascalCase(column.getRawName())})<#if !column?isLast>, </#if></#list>)]
 public partial class ${TablePascalName} : BaseEntity {
 <#list columns as column >
     <#assign ColumnPascalName = NameUtil.toPascalCase(column.getRawName())>
     /// <summary>
     /// ${column.getRawComment()}
     /// </summary>
-    <#if column.hasPrimaryKey()>[Key]</#if>
     [Column("${column.getRawName()}")]
     public ${column.getMapperType()} ${ColumnPascalName} { get; set; }
 <#---->
@@ -36,29 +38,6 @@ public partial class ${TablePascalName} : BaseEntity {
             public ${RemoteTablePascalName}? ${ColumnPascalNameNoId} {get;set;}
         </#list>
     </#list>
-
-<#--&lt;#&ndash;    当前列没有外键，外键在声明的表&ndash;&gt;-->
-<#--    <#list column.getInverseForeignKeys() as foreignKey>-->
-<#--&lt;#&ndash;        获取外键在声明的表的列&ndash;&gt;-->
-<#--        <#list  foreignKey.getColumns() as fc >-->
-<#--            <#if processedForeignKey[fc.getParent().getRawName() + fc.getRawName()]??>-->
-<#--                <#continue >-->
-<#--            </#if>-->
-<#--            <#assign processedForeignKey = processedForeignKey + {fc.getParent().getRawName() + fc.getRawName():true}>-->
-
-<#--            <#assign FcType=NameUtil.toPascalCase(fc.getParent().getRawName())>-->
-<#--            <#assign ForeignKeyColumnPascalName = NameUtil.toPascalCase(fc.getRawName())>-->
-<#--            <#assign ColumnNameFindId=fc.getRawName()?lowerCase?endsWith("_id")>-->
-<#--            <#assign ForeignKeyColumnPascalNameNoId = ColumnNameFindId?then(ForeignKeyColumnPascalName?substring(0,ColumnPascalName?length-2),ForeignKeyColumnPascalName)>-->
-<#--            /// <summary>-->
-<#--            /// ${column.getRawComment()}-->
-<#--            /// </summary>-->
-<#--            /// <ref>${fc.getParent().getRawName()}</ref>-->
-<#--            [InverseProperty(nameof(${FcType}.${ForeignKeyColumnPascalNameNoId}))]-->
-<#--            public IList<${FcType}> ${FcType}${ForeignKeyColumnPascalNameNoId}List {get;set;} = new List<${FcType}>();-->
-<#--        </#list>-->
-<#--    </#list>-->
-
 </#list>
 <#--获取其他表的外键-->
 <#list table.getInverseForeignKeys() as foreignKey>
@@ -81,21 +60,26 @@ public partial class ${TablePascalName} : BaseEntity {
     [InverseProperty(nameof(${RemoteTablePascalName}.${RemoteColumnPascalNameNoId}))]
     public IList<${RemoteTablePascalName}> ${RemoteTablePascalName}${RemoteColumnPascalNameNoId}List {get;set;} = new List<${RemoteTablePascalName}>();
 </#list>
-
-    public void  fillInsertDefaultValue()
+    /// <summary>
+    ///
+    /// </summary>
+    public override void FillInsertDefaultValue()
     {
 <#list columns as column >
-<#if column.hasPrimaryKey() && column.getMapperType() == "Guid">
+<#if column.hasPrimaryKey() && column.getMapperType() == "Guid" && !column.hasForeignKey()>
         this.${NameUtil.toPascalCase(column.getRawName())} = Guid.CreateVersion7();
 </#if>
 </#list>
     }
 
-    public void  fillUpdateDefaultValue()
+    /// <summary>
+    ///
+    /// </summary>
+    public override void FillUpdateDefaultValue()
     {
-<#list columns as column >
+<#--<#list columns as column >-->
 
-</#list>
+<#--</#list>-->
     }
 
 }

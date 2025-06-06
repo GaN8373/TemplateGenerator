@@ -1,16 +1,16 @@
 <#assign DbStructData=table.getParent()>
 <#assign DbPascalName = NameUtil.toPascalCase(DbStructData.getRawName())>
-<#assign DbContext = DbPascalName + "Context">
+<#assign DbContext = "BizContext">
 <#assign TablePascalCaseName=NameUtil.toPascalCase(table.getRawName())>
 <#assign TableSnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
 <#assign primarys=table.getPrimaryColumns()>
 
 #region config
 fileName=Mutation${TablePascalCaseName}.cs
-dir=Endpoint
+dir=${DbPascalName}/Endpoint
 #endregion
-
 using HotChocolate.Resolvers;
+using LinqToDB;
 /// <summary>
 /// 增删改 ${table.getRawComment()}
 /// </summary>
@@ -25,7 +25,7 @@ public static class Mutation${TablePascalCaseName}
     /// <returns></returns>
     public static async Task<${TablePascalCaseName}?> Add${TablePascalCaseName}([Service]${DbContext} context, ${TablePascalCaseName} input)
     {
-        input.fillInsertDefaultValue();
+        input.FillInsertDefaultValue();
         var result = await context.AddAsync(input);
         await context.SaveChangesAsync();
         return result.Entity;
@@ -39,7 +39,7 @@ public static class Mutation${TablePascalCaseName}
     /// <returns></returns>
     public static async Task<${TablePascalCaseName}?> Update${TablePascalCaseName}([Service]${DbContext} context, ${TablePascalCaseName} input)
     {
-        input.fillUpdateDefaultValue();
+        input.FillUpdateDefaultValue();
         var result = context.Update(input);
         await context.SaveChangesAsync();
         return result.Entity;
@@ -49,18 +49,32 @@ public static class Mutation${TablePascalCaseName}
     /// 删除 ${table.getRawComment()}
     /// </summary>
     /// <param name="context">auto injected</param>
-    <#list primarys as column >
-    /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment()}</param>
-        </#list>
-    /// <returns></returns> 
-    public static async Task<int?> Delete${TablePascalCaseName}([Service]IFreeSql context,
-<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
+    /// <param name="input">delete condition</param>
+    /// <returns></returns>
+    public static async Task<int> Delete${TablePascalCaseName}([Service]${DbContext} context,
+    <#if primarys?size == 1>
+        ${primarys[0].getMapperType()} input)
+    <#else>
+        List<Delete${TablePascalCaseName}Input> input)
+    </#if>
     {
         return await context.${TablePascalCaseName}Set
-        <#list primarys as column >
-        .Where(x => x.${NameUtil.toPascalCase(column.getRawName())} == ${NameUtil.toCamelCase(column.getRawName())})
-        </#list>
+    <#if primarys?size == 1>
+        .Where(x => input == x.${NameUtil.toPascalCase(primarys[0].getRawName())})
+    <#else>
+        .Where(x => input.Contains(
+            new (){ <#list primarys as column >${NameUtil.toPascalCase(column.getRawName())} = x.${NameUtil.toPascalCase(column.getRawName())}<#if !column?is_last>, </#if></#list> }
+        ))
+    </#if>
         .DeleteAsync();
- }
-
+    }
 }
+
+<#if primarys?size gt 1>
+    public class Delete${TablePascalCaseName}Input
+    {
+        <#list primarys as column >
+           public ${column.getMapperType()} ${NameUtil.toPascalCase(column.getRawName())} {get; set;}
+        </#list>
+    }
+</#if>

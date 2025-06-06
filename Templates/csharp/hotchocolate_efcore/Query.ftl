@@ -2,10 +2,10 @@
 <#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
 <#assign DbStructData=table.getParent()>
 <#assign DbPascalName = NameUtil.toPascalCase(DbStructData.getRawName())>
-<#assign DbContext = DbPascalName + "Context">
+<#assign DbContext =  "BizContext">
 #region config
 fileName=Query${PascalCaseName}.cs
-dir=Endpoint
+dir=${DbPascalName}/Endpoint
 #endregion
 
 using HotChocolate.Resolvers;

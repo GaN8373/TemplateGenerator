@@ -22,7 +22,7 @@ ${table.getRawStatement()}
     </#list>
 
     // getForeignKeyList
-    <#list column.getForeignKeyList() as foreignKey>
+    <#list column.getForeignKeys() as foreignKey>
         foreignKey: ${foreignKey.getRawName()}
 
         <#list foreignKey.getOtherColumn() as oc>

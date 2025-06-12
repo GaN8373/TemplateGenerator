@@ -24,6 +24,14 @@ public static class Query${PascalCaseName}
     [UseSorting]
     public static IQueryable<${PascalCaseName}> Get${PascalCaseName}(IResolverContext context, [Service] IFreeSql db)
     {
-        return db.Select<${PascalCaseName}>().AsQueryable();
+        var select = db.Select<${PascalCaseName}>();
+        var filterContext = context.GetFilterContext();
+        var asPredicate = filterContext?.AsPredicate<${PascalCaseName}>();
+        if (asPredicate != null) select.Where(asPredicate)
+
+            .IncludeMany(x => x.RUserRoleUserList)
+        ;
+
+        return .AsQueryable();
     }
 }

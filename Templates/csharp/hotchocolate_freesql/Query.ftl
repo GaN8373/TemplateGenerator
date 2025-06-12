@@ -5,8 +5,11 @@
 fileName=Query${PascalCaseName}.cs
 dir=Endpoint
 #endregion
-
+using GaN8373.HotChocolate.Extensions.FreeSQL.Extensions;
+using GaN8373.HotChocolate.Extensions.FreeSQL.Factories;
 using HotChocolate.Resolvers;
+using HotChocolate.Types.Pagination;
+
 
 /// <summary>
 /// 查询 ${table.getRawComment()}
@@ -22,16 +25,20 @@ public static class Query${PascalCaseName}
     [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public static IQueryable<${PascalCaseName}> Get${PascalCaseName}(IResolverContext context, [Service] IFreeSql db)
+    public static Connection<${PascalCaseName}> Get${PascalCaseName}(IResolverContext context, [Service] IFreeSql db)
     {
-        var select = db.Select<${PascalCaseName}>();
-        var filterContext = context.GetFilterContext();
-        var asPredicate = filterContext?.AsPredicate<${PascalCaseName}>();
-        if (asPredicate != null) select.Where(asPredicate)
+        var select = context.FillGraphqlParams<${PascalCaseName}>(db, out var paging);
+        var projectionSelector = context.TryExtractProjectionSelector<${PascalCaseName}>(x => new ${PascalCaseName}{
+            <#list columns as column >
+                <#if column.hasPrimaryKey() || column.getRawName()?lower_case?ends_with("id")>
+                    <#assign ColumnPascalName = NameUtil.toPascalCase(column.getRawName())>
+                    ${ColumnPascalName} = x.${ColumnPascalName}${column?is_last?then("",",")}
+                </#if>
+            </#list>
+        });
 
-            .IncludeMany(x => x.RUserRoleUserList)
-        ;
+        var list = projectionSelector == null ? [] : select.ToList(projectionSelector);
 
-        return .AsQueryable();
+        return ConnectionFactory.CreateConnection(list, paging, x => $"<#list primarys as column >{x.${NameUtil.toPascalCase(column.getRawName())}}</#list>");
     }
 }

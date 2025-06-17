@@ -1,6 +1,8 @@
 <#assign PascalCaseName=NameUtil.toPascalCase(table.getRawName())>
 <#assign SnakeCaseName=NameUtil.toSnakeCase(table.getRawName())>
 <#assign DbStructData=table.getParent()>
+<#assign primarys=table.getPrimaryColumns()>
+
 #region config
 fileName=Query${PascalCaseName}.cs
 dir=Endpoint

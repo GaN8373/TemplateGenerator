@@ -13,6 +13,9 @@ dir=Entities
 
 public abstract class BaseEntity
 {
+    public BaseStatus Status { get; set; } = BaseStatus.Enable;
+    ${context.put("BaseEntity.Status","true")}
+
     /// <summary>
     /// 插入时填充默认值
     /// </summary>
@@ -23,4 +26,18 @@ public abstract class BaseEntity
     public virtual void FillUpdateDefaultValue(){}
 
 }
+
+public enum BaseStatus
+{
+    /// <summary>
+    ///     启用
+    /// </summary>
+    Enable = 0,
+
+    /// <summary>
+    ///     禁用
+    /// </summary>
+    Disable = 1
+}
+
 ${context.put("BaseEntity","true")}

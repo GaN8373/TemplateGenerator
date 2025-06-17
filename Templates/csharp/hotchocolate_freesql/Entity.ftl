@@ -4,7 +4,7 @@
 <#assign TablePascalName=NameUtil.toPascalCase(table.getRawName())>
 #region config
 fileName=${TablePascalName}.cs
-dir=Entities
+dir=${DbPascalName}/Entities
 #endregion
 <#---->
 using FreeSql.DataAnnotations;
@@ -17,6 +17,8 @@ using FreeSql.DataAnnotations;
 public partial class ${TablePascalName} : BaseEntity {
 <#list columns as column >
     <#assign ColumnPascalName = NameUtil.toPascalCase(column.getRawName())>
+    <#if context.containsKey("BaseEntity." + ColumnPascalName)><#continue ></#if>
+<#---->
     /// <summary>
     /// ${column.getRawComment()}
     /// </summary>

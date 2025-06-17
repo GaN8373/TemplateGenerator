@@ -48,7 +48,7 @@ public static class Mutation${PascalCaseName}
     /// <param name="${NameUtil.toCamelCase(column.getRawName())}">${column.getRawComment()}</param>
         </#list>
     /// <returns></returns> 
-    public static async Task<${PascalCaseName}?> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}</#list>)
+    public static async Task<${PascalCaseName}?> Delete${PascalCaseName}([Service]IFreeSql context,<#list primarys as column >  ${column.getMapperType()} ${NameUtil.toCamelCase(column.getRawName())}<#if !column?is_last>, </#if></#list>)
     {
         var result = await context.Delete<${PascalCaseName}>()
         <#list primarys as column >

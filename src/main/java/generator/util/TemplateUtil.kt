@@ -42,11 +42,11 @@ object TemplateUtil {
         if (matcher.find()) {
             var result = replacementTemplate
             for (i in 1..matcher.groupCount()) {
-                var groupValue = matcher.group(i)
+                val groupValue = matcher.group(i)
                 if (groupValue != null) {
-                    groupValue = convertType(groupValue, typeMappingUnits.filter { it.action != MapperAction.Regex })
+                    val convertType = convertType(groupValue, typeMappingUnits)
 
-                    result = result.replace("$$i", groupValue!!)
+                    result = result.replace("$$i", convertType ?: groupValue)
                 }
             }
             return result
@@ -85,28 +85,28 @@ object TemplateUtil {
 
 
     @JvmStatic
-    fun convertType(v: String, typeMappingUnits: Collection<TypeMappingUnit>): String? {
+    fun convertType(rawValue: String, typeMappingUnits: Collection<TypeMappingUnit>): String? {
         for (typeMapper in typeMappingUnits.sorted()) {
-            val valueLowercase = v.lowercase()
-            var rule = typeMapper.rule
+            val valueLowercase = rawValue.lowercase()
+            var rawRule = typeMapper.rule
 
             if (typeMapper.action == MapperAction.Regex
-                && typeMapper.type.contains("$1")
-                && typeMapper.action.match.match(rule, valueLowercase)
+                && typeMapper.type.contains("$")
+                && typeMapper.action.match.match(rawRule, rawValue)
             ) {
                 return replaceWithRegexGroups(
                     typeMappingUnits,
-                    rule,
-                    valueLowercase,
+                    rawRule,
+                    rawValue,
                     typeMapper.type
                 )
             }
 
             if (typeMapper.action != MapperAction.Regex) {
-                rule = rule.lowercase()
+                rawRule = rawRule.lowercase()
             }
 
-            if (typeMapper.action.match.match(rule, valueLowercase)) {
+            if (typeMapper.action.match.match(rawRule, valueLowercase)) {
                 return typeMapper.type
             }
         }

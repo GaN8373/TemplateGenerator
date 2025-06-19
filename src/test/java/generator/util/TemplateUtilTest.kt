@@ -94,13 +94,110 @@ internal class TemplateUtilTest {
         val typeMappingUnits = listOf(
             TypeMappingUnit(
                 action = MapperAction.Regex,
-                rule = "^(a)(b)\$", // 正则分组捕获
-                type = "Type\$1\$2" // 占位符替换
+                rule = "^(a)(b|B)\$", // 正则分组捕获
+                type = "Type$1$2" // 占位符替换
             )
         )
         val result = TemplateUtil.convertType("aB", typeMappingUnits)
-        assertEquals("Typeab", result) // 输入转换为"ab"后匹配分组
+        assertEquals("TypeaB", result) // 输入转换为"ab"后匹配分组
     }
+
+    /**
+     * TC6: Regex替换逻辑（多分组替换）
+     * 输入满足正则条件且type包含多个$1、$2等占位符
+     */
+    @Test
+    fun `convertType should return replaced type with multiple groups when regex matches`() {
+        val typeMappingUnits = listOf(
+            TypeMappingUnit(
+                action = MapperAction.Regex,
+                rule = "^(a)(B)(c)\$", // 三个分组
+                type = "Type$1$2$3" // 占位符替换
+            )
+        )
+        val result = TemplateUtil.convertType("aBc", typeMappingUnits)
+        assertEquals("TypeaBc", result) // 输入转换为"abc"后匹配三个分组
+    }
+
+      /**
+     * TC6: Regex替换逻辑（多分组替换）
+     * 输入满足正则条件且type包含多个$1、$2等占位符
+     */
+    @Test
+    fun convertTypeReplace() {
+        val typeMappingUnits = listOf(
+            TypeMappingUnit(
+                action = MapperAction.Regex,
+                rule = "^(a)(B)(c)\$", // 三个分组
+                type = "Type$1$2$3" // 占位符替换
+            ),
+            TypeMappingUnit(
+                action = MapperAction.Eq,
+                rule = "a", // 再次替换
+                type = "Hello"
+            )
+        )
+        val result = TemplateUtil.convertType("aBc", typeMappingUnits)
+        assertEquals("TypeHelloBc", result) // 输入转换为"abc"后匹配三个分组
+    }
+
+      /**
+     * TC6: Regex替换逻辑（多分组替换）
+     * 输入满足正则条件且type包含多个$1、$2等占位符
+     */
+    @Test
+    fun convertTypeReplace2() {
+        val typeMappingUnits = listOf(
+            TypeMappingUnit(
+                action = MapperAction.Regex,
+                rule = "^(a(B))(c)\$", // 三个分组
+                type = "Type$1$2$3" // 占位符替换
+            ),
+            TypeMappingUnit(
+                action = MapperAction.StartsWith,
+                rule = "a", // 再次替换
+                type = "Hello"
+            )
+        )
+        val result = TemplateUtil.convertType("aBc", typeMappingUnits)
+        assertEquals("TypeHelloBc", result) // 输入转换为"abc"后匹配三个分组
+    }
+
+
+    /**
+     * TC7: Regex替换逻辑（带数字分组）
+     * 输入满足正则条件且type包含$1、$2并带有数字
+     */
+    @Test
+    fun `convertType should handle numeric groups correctly when regex matches`() {
+        val typeMappingUnits = listOf(
+            TypeMappingUnit(
+                action = MapperAction.Regex,
+                rule = "^([0-9]+)([a-zA-Z]+)\$", // 数字和字母分组
+                type = "$2_$1" // 交换顺序
+            )
+        )
+        val result = TemplateUtil.convertType("123XYZ", typeMappingUnits)
+        assertEquals("XYZ_123", result) // 输入匹配数字和字母分组
+    }
+
+    /**
+     * TC8: Regex替换逻辑（特殊字符处理）
+     * 输入包含特殊字符时，确保正则仍能正确捕获并替换
+     */
+    @Test
+    fun `convertType should handle special characters in input string`() {
+        val typeMappingUnits = listOf(
+            TypeMappingUnit(
+                action = MapperAction.Regex,
+                rule = "^(\\W+)(\\w+)\$", // 匹配非单词字符和单词字符
+                type = "Special$2"
+            )
+        )
+        val result = TemplateUtil.convertType("!@#test", typeMappingUnits)
+        assertEquals("Specialtest", result) // 输入中的!@#是非单词字符
+    }
+
 
     /**
      * TC2: 直接匹配类型（如Exact匹配）
@@ -175,6 +272,7 @@ internal class TemplateUtilTest {
         val result = TemplateUtil.convertType("test", typeMappingUnits)
         assertNull(result)
     }
+
 }
 
 

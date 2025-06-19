@@ -5,7 +5,7 @@ import javax.swing.table.DefaultTableModel
 
 class TableRowData(@JvmField var data: List<TypeMappingUnit>) : DefaultTableModel(COLUMN_NAMES, 0) {
     init {
-        for (it in data) {
+        for (it in data.sorted()) {
             addRow(arrayOf<Any>(it.action.name, it.rule, it.type))
         }
     }
@@ -17,6 +17,7 @@ class TableRowData(@JvmField var data: List<TypeMappingUnit>) : DefaultTableMode
             0 -> typeMapper.action.name
             1 -> typeMapper.rule
             2 -> typeMapper.type
+            3 -> typeMapper.sortIndex!!
             else -> ""
         }
     }
@@ -28,10 +29,11 @@ class TableRowData(@JvmField var data: List<TypeMappingUnit>) : DefaultTableMode
             0 -> typeMapper.action = MapperAction.valueOf(aValue.toString())
             1 -> typeMapper.rule = aValue.toString()
             2 -> typeMapper.type = aValue.toString()
+            3 -> typeMapper.sortIndex = aValue.toString().toIntOrNull()
         }
     }
 
     companion object {
-        private val COLUMN_NAMES = arrayOf("Action", "Rule", "Write")
+        private val COLUMN_NAMES = arrayOf("Action", "Rule", "Write", "SortIndex")
     }
 }

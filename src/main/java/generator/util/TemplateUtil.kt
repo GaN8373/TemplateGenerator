@@ -44,12 +44,7 @@ object TemplateUtil {
             for (i in 1..matcher.groupCount()) {
                 var groupValue = matcher.group(i)
                 if (groupValue != null) {
-                    for (typeMapper in typeMappingUnits) {
-                        if (typeMapper.action.match.match(typeMapper.rule, groupValue!!)) {
-                            groupValue = typeMapper.type
-                            break
-                        }
-                    }
+                    groupValue = convertType(groupValue, typeMappingUnits.filter { it.action != MapperAction.Regex })
 
                     result = result.replace("$$i", groupValue!!)
                 }
@@ -91,7 +86,7 @@ object TemplateUtil {
 
     @JvmStatic
     fun convertType(v: String, typeMappingUnits: Collection<TypeMappingUnit>): String? {
-        for (typeMapper in typeMappingUnits) {
+        for (typeMapper in typeMappingUnits.sorted()) {
             val valueLowercase = v.lowercase()
             var rule = typeMapper.rule
 

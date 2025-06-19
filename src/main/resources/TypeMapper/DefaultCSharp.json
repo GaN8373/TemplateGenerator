@@ -1,5 +1,11 @@
 [
   {
+    "Action": "Eq",
+    "Rule": "uuid[]",
+    "Type": "Guid[]",
+    "SortIndex":90
+  },
+  {
     "Action": "Regex",
     "Rule": "(.*)\\[\\]",
     "Type": "IEnumerable<$1>"

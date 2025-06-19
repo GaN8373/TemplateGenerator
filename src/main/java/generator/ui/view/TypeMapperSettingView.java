@@ -85,7 +85,7 @@ public class TypeMapperSettingView implements Configurable {
             if (selectedItem instanceof String label) {
                 var newItem = label + "_copy";
                 var typeMappers = globalState.getTypeMappingGroupMap().computeIfAbsent(label, k -> new HashSet<>());
-                var collect = typeMappers.stream().map(x -> new TypeMappingUnit(x.getAction(), x.getRule(), x.getType())).collect(Collectors.toSet());
+                var collect = typeMappers.stream().map(TypeMappingUnit::of).collect(Collectors.toSet());
                 globalState.getTypeMappingGroupMap().put(newItem, collect);
                 typeMappingSelect.addItem(newItem);
             }
@@ -213,7 +213,7 @@ public class TypeMapperSettingView implements Configurable {
         newRowButton.addActionListener(e -> {
             if (typeMappingSelect.getSelectedItem() instanceof String str) {
                 var typeMappers = globalState.getTypeMappingGroupMap().computeIfAbsent(str, k -> new HashSet<>());
-                typeMappers.add(new TypeMappingUnit(MapperAction.Eq, "", ""));
+                typeMappers.add(TypeMappingUnit.newDefault());
                 refreshTypeMappingTable();
             }
         });

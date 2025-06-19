@@ -1,4 +1,7 @@
 # Changelog
+## [3.1.0]
+## features
+- mapping sortIndex supported
 ## [3.0.0]
 ## features
 - better foreign key support

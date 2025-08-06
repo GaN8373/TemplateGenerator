@@ -118,7 +118,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                     var templatePath = entry.getKey().toString().replace(StringUtil.defaultIfEmpty(scopeState.getTemplateGroupPath(), ""), "");
 
                     try {
-                        // region process template context
+                        //region process template context
                         var context = new HashMap<String, Object>();
                         context.put("context", templateSharedContext);
                         context.put("namespace", namespaceTextField.getText());
@@ -139,7 +139,7 @@ public class GenerateConfigDialog extends DialogWrapper {
                         var templateConfig = extracted.component1();
                         sourceCode = extracted.component2();
 
-                        // endregion
+                        //endregion
 
                         var fileName = StringUtil.isEmpty(templateConfig.getFileName())
                                 ? entry.getKey().getFileName().toString() : templateConfig.getFileName();
@@ -408,20 +408,22 @@ public class GenerateConfigDialog extends DialogWrapper {
                 if (namespaceLockCheckBox.isSelected()) {
                     return;
                 }
-
-                var beginIndex = pathInput.getText().indexOf(project.getName());
-                if (beginIndex == -1) {
-                    namespaceTextField.setText(pathInput.getText());
-                    return;
-                } else {
-                    beginIndex = beginIndex + project.getName().length();
+                var basePath = project.getBasePath();
+                if (basePath == null) {
+                    basePath = "";
                 }
 
-                var text = project.getName() + pathInput.getText().substring(beginIndex);
-                if (text.isBlank()) {
+                var namespace = "";
+
+                if (pathInput.getText().startsWith(basePath)) {
+                    namespace = pathInput.getText().substring(basePath.length());
+                }
+                namespace = namespace.startsWith("/") || namespace.startsWith("\\") ? namespace.substring(1) : namespace;
+
+                if (namespace.isBlank()) {
                     namespaceTextField.setText(project.getName());
                 } else {
-                    namespaceTextField.setText(text.replaceAll("[/|\\\\]", "."));
+                    namespaceTextField.setText(namespace.replaceAll("[/|\\\\]", "."));
                 }
             }
 

@@ -1,12 +1,15 @@
 # Changelog
+## [3.2.0]
+### futures
+- add namespace custom split
 ## [3.1.0]
-## features
+### features
 - mapping sortIndex supported
 ## [3.0.0]
-## features
+### features
 - better foreign key support
 - child directory traverser support
-## commit
+### commit
 - docs: example comments 
 - del: foreign key obsolete api del: column data getForeignKeyList api, use getForeignKeys 
 - feat: supported dir tree generate; docs: add cn comments; template: add test template 

@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "generator"
-version = "3.1.2-release"
+version = "3.2.0-release"
 
 
 dependencies {

@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import freemarker.core.StopException;
 import generator.config.ScopeState;
+import generator.data.ComboBoxSelect;
 import generator.data.GenerateContext;
 import generator.data.ScoredMember;
 import generator.data.TemplateContextWrapper;
@@ -38,6 +39,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -71,6 +73,7 @@ public class GenerateConfigDialog extends DialogWrapper {
     private JButton tableSelectButton;
     private JTextField namespaceTextField;
     private JCheckBox namespaceLockCheckBox;
+    private JComboBox<String> namespaceSplitChar;
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
@@ -366,6 +369,32 @@ public class GenerateConfigDialog extends DialogWrapper {
         });
     }
 
+    private void updateNamespaceTextInput() {
+        if (namespaceLockCheckBox.isSelected()) {
+            return;
+        }
+        var basePath = project.getBasePath();
+        if (basePath == null) {
+            basePath = "";
+        }
+
+        var namespace = "";
+
+        if (pathInput.getText().startsWith(basePath)) {
+            namespace = pathInput.getText().substring(basePath.length());
+        }
+        namespace = namespace.startsWith("/") || namespace.startsWith("\\") ? namespace.substring(1) : namespace;
+
+        if (namespace.isBlank()) {
+            namespace = project.getName();
+        } else {
+            var replacement = namespaceSplitChar.getSelectedItem() == null ? "." : namespaceSplitChar.getSelectedItem().toString();
+             namespace = StringUtil.replace(namespace, "\\", replacement);
+             namespace = StringUtil.replace(namespace, "/", replacement);
+        }
+        namespaceTextField.setText(namespace);
+    }
+
     public GenerateConfigDialog(AnActionEvent event) {
         super(event.getProject());
 
@@ -385,46 +414,13 @@ public class GenerateConfigDialog extends DialogWrapper {
         chooseButton.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setGenerateFileStorePath(x.getPath())));
 
         templateChoose.addActionListener(e -> fileChooserConsumer.apply(e).ifPresent(x -> scopeState.setTemplateGroupPath(x.getPath())));
+
+        //region output path init
         pathInput.setText(Objects.requireNonNull(project).getBasePath());
-        namespaceTextField.setText(project.getName());
-        namespaceTextField.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                namespaceLockCheckBox.setSelected(true);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-
-            }
-        });
         pathInput.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 updateNamespaceTextInput();
-            }
-
-            private void updateNamespaceTextInput() {
-                if (namespaceLockCheckBox.isSelected()) {
-                    return;
-                }
-                var basePath = project.getBasePath();
-                if (basePath == null) {
-                    basePath = "";
-                }
-
-                var namespace = "";
-
-                if (pathInput.getText().startsWith(basePath)) {
-                    namespace = pathInput.getText().substring(basePath.length());
-                }
-                namespace = namespace.startsWith("/") || namespace.startsWith("\\") ? namespace.substring(1) : namespace;
-
-                if (namespace.isBlank()) {
-                    namespaceTextField.setText(project.getName());
-                } else {
-                    namespaceTextField.setText(namespace.replaceAll("[/|\\\\]", "."));
-                }
             }
 
             @Override
@@ -437,6 +433,44 @@ public class GenerateConfigDialog extends DialogWrapper {
 
             }
         });
+        //endregion
+
+        //region init namespaceSplitChar
+        var namespaceSplitCharList = GlobalStateService.getInstance().getState().getNamespaceSplitChar();
+        namespaceSplitChar.setEditable(true);
+        for (var i = 0; i < namespaceSplitCharList.size(); i++) {
+            var item = namespaceSplitCharList.get(i);
+            namespaceSplitChar.addItem(item.getValue());
+            if (item.isSelect()) {
+                namespaceSplitChar.setSelectedIndex(i);
+            }
+        }
+
+        namespaceSplitChar.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                var selectedObjects = e.getItem();
+                for (ComboBoxSelect x : namespaceSplitCharList) {
+                    x.setSelect(x.getValue() == selectedObjects);
+                }
+                updateNamespaceTextInput();
+            }
+        });
+        //endregion
+
+        //region namespace text field init
+        namespaceTextField.setText(project.getName());
+        namespaceTextField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                namespaceLockCheckBox.setSelected(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
+        //endregion
 
         refreshTemplateGroupSelect();
 

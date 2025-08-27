@@ -31,6 +31,33 @@
     "Type": "string"
   },
   {
+    "Action": "EndsWith",
+    "Rule": "text",
+    "Type": "string"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "json",
+    "Type": "string"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "bit(1)",
+    "Type": "bool"
+  },
+  {
+    "Action": "Eq",
+    "Rule": "tinyint(1)",
+    "Type": "bool",
+    "SortIndex": 1000
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "tinyint",
+    "Type": "int",
+    "SortIndex": 1001
+  },
+  {
     "Action": "Eq",
     "Rule": "INT",
     "Type": "int"
@@ -73,6 +100,11 @@
   {
     "Action": "Eq",
     "Rule": "SMALLMONEY",
+    "Type": "decimal"
+  },
+  {
+    "Action": "StartsWith",
+    "Rule": "double",
     "Type": "decimal"
   },
   {
@@ -129,5 +161,10 @@
     "Action": "Eq",
     "Rule": "uuid",
     "Type": "Guid"
+  },
+  {
+    "Action": "EndsWith",
+    "Rule": "blob",
+    "Type": "byte[]"
   }
 ]

@@ -23,7 +23,7 @@ public partial class ${TablePascalName} : BaseEntity {
     /// ${column.getRawComment()}
     /// </summary>
     [Column(Name = "${column.getRawName()}"${column.hasPrimaryKey()?then(", IsPrimary = true","")})]
-    public ${column.getMapperType()} ${ColumnPascalName} { get; set; }
+    public ${column.getMapperType()}${column.hasNotNull()?then("","?")} ${ColumnPascalName} { get; set; }
 <#---->
     <#list column.getForeignKeys() as foreignKey>
         <#list  foreignKey.getInverseColumns() as RemoteColumn >
@@ -39,6 +39,7 @@ public partial class ${TablePascalName} : BaseEntity {
         </#list>
     </#list>
 </#list>
+
 <#--获取其他表的外键-->
 <#list table.getInverseForeignKeys() as foreignKey>
 <#--    为了不混淆，Local都指向当前表-->

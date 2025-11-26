@@ -1,4 +1,6 @@
 # Changelog
+## [3.2.2]
+- update ide support version
 ## [3.2.0]
 ### futures
 - add namespace custom split

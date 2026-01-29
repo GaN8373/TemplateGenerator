@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "generator"
-version = "3.2.1-release"
+version = "3.2.2-release"
 
 
 dependencies {
@@ -41,8 +41,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("223")
-        untilBuild.set("252.*")
+        sinceBuild.set("242")
+        untilBuild.set("253.*")
         val changelog =file("CHANGELOG.md").readText()
         changeNotes.set(changelog.substring(0, minOf(MAX_CHANGE_NOTES_LENGTH, changelog.length)))
     }

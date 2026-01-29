@@ -1,0 +1,182 @@
+[
+  {
+    "action": "StartsWith",
+    "rule": "INT",
+    "type": "Integer",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "REAL",
+    "type": "Float",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "BIGINT",
+    "type": "Long",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "BINARY",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "json",
+    "type": "com.fasterxml.jackson.databind.node.ObjectNode",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DATE",
+    "type": "java.time.LocalDateTime",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TINYBLOB",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TIME",
+    "type": "java.time.LocalTime",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TINYINT",
+    "type": "Byte",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "MEDIUMINT",
+    "type": "Integer",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "NUMERIC",
+    "type": "java.math.BigDecimal",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "VARCHAR",
+    "type": "String",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "BIT",
+    "type": "Boolean",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "CHAR",
+    "type": "String",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DATETIME",
+    "type": "java.time.LocalDateTime",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "SMALLINT",
+    "type": "Short",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "MEDIUMBLOB",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "INTEGER",
+    "type": "Integer",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "LONGTEXT",
+    "type": "String",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "BLOB",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "LONGBLOB",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TIMESTAMP",
+    "type": "java.time.LocalDateTime",
+    "sortIndex": 90
+  },
+  {
+    "action": "StartsWith",
+    "rule": "VARBINARY",
+    "type": "byte[]",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DECIMAL",
+    "type": "java.math.BigDecimal",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "MEDIUMTEXT",
+    "type": "String",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "YEAR",
+    "type": "Integer",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TINYTEXT",
+    "type": "String",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "DOUBLE",
+    "type": "Double",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "FLOAT",
+    "type": "Float",
+    "sortIndex": 100
+  },
+  {
+    "action": "StartsWith",
+    "rule": "TEXT",
+    "type": "String",
+    "sortIndex": 100
+  }
+]

@@ -62,22 +62,5 @@ public partial class ${TablePascalName} : BaseEntity {
     public IList<${RemoteTablePascalName}> ${RemoteTablePascalName}${RemoteColumnPascalNameNoId}List {get;set;} = new List<${RemoteTablePascalName}>();
 </#list>
 
-    /// <inheritdoc />
-    public override void FillInsertDefaultValue()
-    {
-<#list columns as column >
-<#if column.hasPrimaryKey() && column.getMapperType() == "Guid" && !column.hasForeignKey()>
-        this.${NameUtil.toPascalCase(column.getRawName())} = Guid.CreateVersion7();
-</#if>
-</#list>
-    }
-
-    /// <inheritdoc />
-    public override void FillUpdateDefaultValue()
-    {
-<#--<#list columns as column >-->
-
-<#--</#list>-->
-    }
 
 }

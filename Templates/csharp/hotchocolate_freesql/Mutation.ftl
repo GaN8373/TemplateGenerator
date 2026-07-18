@@ -22,7 +22,7 @@ public static class Mutation${PascalCaseName}
     /// <returns></returns>
     public static async Task<${PascalCaseName}?> Add${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
-        input.FillInsertDefaultValue();
+        
         var result = await context.Insert(input).ExecuteInsertedAsync();
         return result.FirstOrDefault();
     }
@@ -35,7 +35,7 @@ public static class Mutation${PascalCaseName}
     /// <returns></returns>
     public static async Task<${PascalCaseName}?> Update${PascalCaseName}([Service]IFreeSql context, ${PascalCaseName} input)
     {
-        input.FillUpdateDefaultValue();
+       
         var result = await context.Update<${PascalCaseName}>().SetSource(input).ExecuteUpdatedAsync();
         return result.FirstOrDefault();
     }
